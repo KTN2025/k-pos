@@ -1402,7 +1402,7 @@ A.userNew=()=>userForm(null);
 A.userEdit=el=>userForm(S.users.find(u=>u.id===el.dataset.id));
 A.userSave=el=>{const id=el.dataset.id,name=$('#u_name').value.trim(),role=$('#u_role').value,pin=$('#u_pin').value.trim();
   if(!name)return toast('ใส่ชื่อก่อน');if(!/^\d{4,6}$/.test(pin))return toast('PIN ต้องเป็นตัวเลข 4–6 หลัก');
-  if(S.users.some(u=>u.id!==id&&(u.pin===pin||u.pin.startsWith(pin)||pin.startsWith(u.pin))))return toast('PIN ซ้ำหรือขึ้นต้นเหมือนของคนอื่น ใช้ PIN อื่น');
+  if(S.users.some(u=>u.id!==id&&u.pin&&(u.pin===pin||u.pin.startsWith(pin)||pin.startsWith(u.pin))))return toast('PIN ซ้ำหรือขึ้นต้นเหมือนของคนอื่น ใช้ PIN อื่น');
   const ex=S.users.find(u=>u.id===id);
   if(ex&&ex.role==='owner'&&role!=='owner'&&S.users.filter(u=>u.role==='owner').length===1)return toast('ต้องมีเจ้าของอย่างน้อย 1 คน');
   if(ex)Object.assign(ex,{name,role,pin});else S.users.push({id:uid(),name,role,pin});
