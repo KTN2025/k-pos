@@ -342,6 +342,7 @@ table.data tr.void td{color:var(--muted);text-decoration:line-through}
 .cmp .over{background:var(--accent-soft);color:var(--warn)}
 .cmp .even{background:var(--brand-soft);color:var(--brand)}
 .licbar{padding:8px 16px;font-size:13.5px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--line);background:var(--accent-soft)}.licbar.bad{background:#fde8e6;color:#8a1c12}.licbar a,.licbar button{margin-left:auto}
+#lock.actbg{background:linear-gradient(160deg,#D62828,#B81F1F)!important}#lock.actbg .paybtn{background:#F77F00!important;color:#fff}#lock.actbg .lv{color:#fff}
 .act{max-width:360px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:12px;text-align:center}.act input{font-size:22px;text-align:center;letter-spacing:4px;text-transform:uppercase;padding:12px;border-radius:12px;border:0;background:#fff;color:#14231e;width:100%;box-sizing:border-box}.act .paybtn{width:100%}.act a{color:inherit}a.btn{text-decoration:none;display:inline-flex;align-items:center}
 .compat{background:var(--accent-soft);border-bottom:1px solid var(--line);padding:8px 16px;font-size:13.5px}
 @media (max-width:760px){.userchip,.navmini{display:none}.cmp{grid-template-columns:1fr}}
@@ -364,7 +365,7 @@ table.data tr.void td{color:var(--muted);text-decoration:line-through}
 <body>
 <div class="app" id="app">
   <nav class="rail" aria-label="เมนูหลัก">
-    <div class="logo">K<small>POS</small></div>
+    <div class="logo"><svg width="48" height="48" viewBox="0 0 512 512" style="border-radius:22%;display:block;margin:0 auto"><rect width="512" height="512" fill="#D62828"/><text x="256" y="300" font-family="Kanit,Prompt,sans-serif" font-weight="900" font-size="260" fill="#fff" text-anchor="middle">K</text><rect x="166" y="330" width="180" height="22" rx="11" fill="#F77F00"/><text x="256" y="420" font-family="Kanit,Prompt,sans-serif" font-weight="900" font-size="78" letter-spacing="10" fill="#fff" text-anchor="middle">POS</text></svg></div>
     <button class="nav on" data-a="go" data-v="sell"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>ขาย</button>
     <button class="nav" data-a="go" data-v="tables"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><circle cx="17.5" cy="17.5" r="3.5"/></svg>โต๊ะ<span class="badge" id="busyBadge" hidden></span></button>
     <button class="nav" data-a="go" data-v="kitchen" id="navKitchen" hidden><svg viewBox="0 0 24 24"><path d="M6 13.9A4 4 0 0 1 7 6a5 5 0 0 1 10 0 4 4 0 0 1 1 7.9V20H6z"/><path d="M6 17h12"/></svg>ครัว</button>
@@ -1347,6 +1348,7 @@ let lockBuf='',lockMsg='';
 function renderLock(){
   const el=$('#lock');
   renderLicBar();
+  el.classList.toggle('actbg',licOn()&&!shopCode());
   if(licOn()&&!shopCode()){el.hidden=false;el.innerHTML=actHTML();return}
   if(S.session&&me()){el.hidden=true;return}
   el.hidden=false;
@@ -1901,7 +1903,7 @@ function actHTML(){const foot='<div class="lv">ระบบโดย KTN BUSINES
     <input id="actPin" inputmode="numeric" maxlength="6" placeholder="PIN เจ้าของ" autocomplete="off">
     <input id="actPin2" inputmode="numeric" maxlength="6" placeholder="ยืนยัน PIN อีกครั้ง" autocomplete="off">
     <div class="err">${esc(actMsg)}</div><button class="paybtn" data-a="actPinGo">เริ่มใช้งาน</button></div>${foot}`;
-  return `<div class="lk act"><h1>K-POS</h1><div class="sub">ระบบขายหน้าร้านอาหาร ใช้ได้ทั้งออนไลน์และออฟไลน์</div>
+  return `<div class="lk act"><svg width="110" height="110" viewBox="0 0 512 512" style="border-radius:22%;display:block;margin:0 auto"><rect width="512" height="512" fill="#D62828"/><text x="256" y="300" font-family="Kanit,Prompt,sans-serif" font-weight="900" font-size="260" fill="#fff" text-anchor="middle">K</text><rect x="166" y="330" width="180" height="22" rx="11" fill="#F77F00"/><text x="256" y="420" font-family="Kanit,Prompt,sans-serif" font-weight="900" font-size="78" letter-spacing="10" fill="#fff" text-anchor="middle">POS</text></svg><h1>K-POS</h1><div class="sub">ระบบขายหน้าร้านอาหาร ใช้ได้ทั้งออนไลน์และออฟไลน์</div>
     <input id="actCode" maxlength="8" placeholder="รหัสร้าน เช่น KAB12C" value="${esc(actPrefill())}" autocomplete="off" autocapitalize="characters">
     <div class="err">${esc(actMsg)}</div>
     <button class="paybtn" data-a="actGo" ${actBusy?'disabled':''}>${actBusy?'กำลังตรวจสอบ…':'เข้าใช้งาน'}</button>
