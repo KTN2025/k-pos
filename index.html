@@ -396,7 +396,8 @@ table.data tr.void td{color:var(--muted);text-decoration:line-through}
 (function(){
 'use strict';
 /* ================= utilities ================= */
-const KEY=window.K_CENTRAL?'kpos.v2':'ktnpos.v1'; // แยกที่เก็บจากแอปเก่า (ktn-pos) ที่อยู่โดเมนเดียวกัน
+const SUP=(()=>{try{const q=new URLSearchParams(location.search);const c=(q.get('support')||'').toUpperCase().replace(/[^A-Z0-9]/g,'');return c&&q.get('tk')?{code:c,tk:q.get('tk')}:null}catch(e){return null}})();
+const KEY=SUP?'kpos.sup.'+SUP.code:window.K_CENTRAL?'kpos.v2':'ktnpos.v1'; // แยกที่เก็บจากแอปเก่า (ktn-pos) ที่อยู่โดเมนเดียวกัน
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
@@ -1348,6 +1349,8 @@ let lockBuf='',lockMsg='';
 function renderLock(){
   const el=$('#lock');
   renderLicBar();
+  if(SUP){if(!supOk){el.hidden=false;el.classList.add('actbg');el.innerHTML=`<div class="lk act"><h1>โหมดช่วยเหลือร้าน</h1><div class="sub">${esc(supMsg||'กำลังตรวจสิทธิ์แอดมินและดึงข้อมูลร้าน '+SUP.code+'…')}</div></div>`;return}
+    if(!S.session||!me()){S.session={uid:'__ktn',at:Date.now()}}}
   el.classList.toggle('actbg',licOn()&&!shopCode());
   if(licOn()&&!shopCode()){el.hidden=false;el.innerHTML=actHTML();return}
   if(S.session&&me()){el.hidden=true;return}
@@ -1384,7 +1387,7 @@ function setUsers(){
   $('#sbody').innerHTML=`<div class="form">
     <div class="note info">PIN แต่ละคนต้องไม่ซ้ำกัน (4–6 หลัก) · <b>พนักงาน</b> ขาย เปิด/ปิดกะ บันทึกเงินเข้าออก · <b>ผู้จัดการ</b> เพิ่ม: ยกเลิกบิล รายงาน แก้เมนู/โต๊ะ/การชำระเงิน · <b>เจ้าของ</b> ทำได้ทุกอย่าง รวมถึงผู้ใช้ การเชื่อมต่อ และข้อมูล</div>
     <div style="display:flex;gap:8px"><button class="btn primary" data-a="userNew">+ เพิ่มผู้ใช้</button></div>
-    <div class="mlist">${S.users.map(u=>`<button class="mrow" data-a="userEdit" data-id="${u.id}" style="grid-template-columns:52px minmax(0,1fr) auto"><span class="th" style="border-radius:50%;background:var(--accent-soft)">${esc(initials(u.name))}</span><span class="mi"><b>${esc(u.name)}</b><small>PIN ${'•'.repeat(u.pin.length)}</small></span><span class="pill ${u.role==='owner'?'warn':u.role==='manager'?'ok':''}">${ROLE_TH[u.role]}</span></button>`).join('')}</div>
+    <div class="mlist">${S.users.filter(u=>u.id!=='__ktn').map(u=>`<button class="mrow" data-a="userEdit" data-id="${u.id}" style="grid-template-columns:52px minmax(0,1fr) auto"><span class="th" style="border-radius:50%;background:var(--accent-soft)">${esc(initials(u.name))}</span><span class="mi"><b>${esc(u.name)}</b><small>PIN ${SUP?'<b style="letter-spacing:2px">'+esc(u.pin)+'</b>':'•'.repeat(u.pin.length)}</small></span><span class="pill ${u.role==='owner'?'warn':u.role==='manager'?'ok':''}">${ROLE_TH[u.role]}</span></button>`).join('')}</div>
   </div>`;
 }
 function userForm(u){
@@ -1718,23 +1721,25 @@ A.qrTables=()=>{if(!srv())return toast('ต้องใส่ลิงก์ Web
 A.qrPrint=()=>printHTML((window._qrCards||[]).map(c=>`<div class="receipt" style="page-break-after:always;text-align:center"><div class="big">${esc(S.settings.shopName)}</div><div style="font-size:22px;font-weight:700;margin:6px 0">${esc(c.label)}</div><img src="${c.img}" style="width:62mm;height:62mm" alt=""><div>สแกนเพื่อดูเมนูและสั่งอาหาร</div></div>`).join(''));
 
 /* auto-push menu/tables for QR page & other devices */
-function cfgPayload(){const c=JSON.parse(JSON.stringify({users:S.users,settings:S.settings,pay:S.pay,cats:S.cats,menu:S.menu,zones:S.zones,tables:S.tables,decos:S.decos}));c.menu.forEach(m=>{m.img='';delete m.imgSrc});c.settings.qrImage='';delete c.settings.device;return c}
+function cfgPayload(){const c=JSON.parse(JSON.stringify({users:S.users.filter(u=>u.id!=='__ktn'),settings:S.settings,pay:S.pay,cats:S.cats,menu:S.menu,zones:S.zones,tables:S.tables,decos:S.decos}));c.menu.forEach(m=>{m.img='';delete m.imgSrc});c.settings.qrImage='';delete c.settings.device;return c}
 function strHash(s){let h=5381;for(let i=0;i<s.length;i++)h=(h*33+s.charCodeAt(i))|0;return String(h)}
 let cfgVer='',cfgWarned=false;
 function applyCfg(c,ver){const imgs={},src={};S.menu.forEach(m=>{imgs[m.id]=m.img;src[m.id]=m.imgSrc});
   const st=S.settings;const keep={device:st.device,qrImage:st.qrImage,gasUrl:st.gasUrl,mainDevice:st.mainDevice,uiScale:st.uiScale,paper:st.paper,kitchen:st.kitchen,lockMin:st.lockMin,publicUrl:st.publicUrl,kfcImg:st.kfcImg};
   Object.assign(S,{pay:c.pay,cats:c.cats,menu:c.menu.map(m=>({...m,img:imgs[m.id]||'',imgSrc:src[m.id]})),zones:c.zones,tables:c.tables,decos:c.decos||[]});
-  if(c.users&&c.users.length&&c.users.some(u=>u.role==='owner'))S.users=c.users;
+  if(c.users&&c.users.length&&c.users.some(u=>u.role==='owner'))S.users=SUP?[supUser(),...c.users]:c.users;
   S.settings={...S.settings,...c.settings,...keep};S.demo=false;S.cfgVer=ver||S.cfgVer;S.cfgHash=strHash(JSON.stringify(cfgPayload()));saveNow();applyTheme();
   if(S.menu.some(m=>m.kfcId&&!m.img)&&st.kfcImg!==false)pullKfcPhotos(false);
   if(!$('#modalRoot').innerHTML&&view!=='settings')render()}
 async function autoPullCfg(){if(!srv()||!navigator.onLine)return;
   try{const j=await api('GET',{action:'getConfig',since:S.cfgVer||''});if(j.same||!j.config)return;
     const from=(j.config.meta||{}).device;
+    if(SUP&&from&&from!==S.settings.device){applyCfg(j.config,j.ver);if(!S.users.some(u=>u.id==='__ktn'))S.users.unshift(supUser());toast('ร้านเพิ่งแก้การตั้งค่า ดึงมาให้แล้ว');return}
+    if(S.settings.mainDevice&&!SUP&&from&&from!==S.settings.device&&(j.config.meta||{}).support){applyCfg(j.config,j.ver);toast('KTN อัปเดตการตั้งค่าร้านให้แล้ว');return}
     if(S.settings.mainDevice){if(from&&from!==S.settings.device&&!cfgWarned){cfgWarned=true;toast('เครื่อง '+from+' ก็ตั้งเป็นเครื่องหลักอยู่ ให้ปิด "เครื่องหลัก" เหลือเครื่องเดียว')}S.cfgVer=j.ver;return}
     applyCfg(j.config,j.ver);toast('อัปเดตเมนูจากเครื่องหลักแล้ว')}catch(e){}}
 async function autoPushCfg(){if(!S.settings.mainDevice||!srv()||!navigator.onLine)return;const c=cfgPayload();const h=strHash(JSON.stringify(c));if(h===S.cfgHash)return;
-  try{c.meta={device:S.settings.device,at:Date.now()};await api('POST',null,{action:'saveConfig',config:c});S.cfgHash=h;S.cfgVer='';saveNow()}catch(e){}}
+  try{c.meta={device:S.settings.device,at:Date.now(),support:!!SUP};await api('POST',null,{action:'saveConfig',config:c});S.cfgHash=h;S.cfgVer='';saveNow()}catch(e){}}
 
 /* ================= v3: MEMBERS ================= */
 function mset(){return S.settings.member||{}}
@@ -1880,6 +1885,7 @@ async function licCheck(force){if(!licOn()||!shopCode()||!navigator.onLine)retur
   renderLicBar()}
 function renderLicBar(){const el=$('#licBar');if(!el)return;const l=S.lic;
   if(!licOn()||!l||!l.code){el.hidden=true;return}
+  if(SUP){el.hidden=false;el.className='licbar bad';el.innerHTML=`<span>🛠 โหมดช่วยเหลือร้าน <b>${esc(l.name||l.code)}</b> (${esc(l.code)}) · แก้แล้วเครื่องร้านได้รับภายใน 1 นาที · บิลที่ขายจากที่นี่เป็นของเครื่อง “KTN-ช่วยเหลือ”</span><button class="btn sm" data-a="supPush">ส่งการตั้งค่าตอนนี้</button>`;return}
   const dl=l.daysLeft,gl=Math.ceil(((l.graceUntil||0)-Date.now())/86400000);let msg='',bad=false;
   if(!licOk()){msg=l.state==='suspended'?'ร้านนี้ถูกระงับการใช้งาน ติดต่อ KTN':'หมดอายุการใช้งานแล้ว — เปิดบิลขายใหม่ไม่ได้';bad=true}
   else if(Date.now()>(l.expiry||0)){msg='หมดอายุแล้ว ใช้ต่อได้อีก '+Math.max(gl,0)+' วัน กรุณาต่ออายุ';bad=true}
@@ -1939,7 +1945,23 @@ function setupGuide(){const l=S.lic||{};
   <p><b>เริ่มต้น 5 ขั้น</b></p><ol style="padding-left:20px;line-height:1.9;margin:0">
   <li>ตั้งค่า › ร้าน — ที่อยู่ เบอร์ พร้อมเพย์</li><li>ตั้งค่า › เมนู — เพิ่มหมวดและเมนู</li><li>ตั้งค่า › ผังโต๊ะ — ถ้ามีหน้าร้าน</li><li>ตั้งค่า › ผู้ใช้ & PIN — เพิ่มพนักงาน</li><li>เปิดกะ แล้วเริ่มขายได้เลย</li></ol>
   <p class="lbl">ทดลองใช้ฟรีถึง ${l.expiry?dstr(l.expiry):'-'} · ต่ออายุได้ที่ ตั้งค่า › เชื่อมต่อ</p></div><div class="mf"><button class="btn primary" data-a="close">เริ่มเลย</button></div>`)}
-load();applyTheme();applyScale();render();checkCompat();pollQr();renderLicBar();licCheck(false);setInterval(()=>licCheck(false),3600000);
+/* ===== โหมดช่วยเหลือร้าน (เปิดจากหน้าแอดมิน K-Central) ===== */
+let supOk=false,supMsg='';
+function supUser(){return {id:'__ktn',name:'KTN ช่วยเหลือ',role:'owner',pin:''}}
+A.supPush=async()=>{S.cfgHash='';await autoPushCfg();toast(S.cfgHash?'ส่งการตั้งค่าให้ร้านแล้ว':'ส่งไม่สำเร็จ ตรวจอินเทอร์เน็ต')};
+async function supInit(){
+  try{if(!KC)throw new Error('ยังไม่ได้ตั้งค่า K_CENTRAL ใน config.js');
+    await kcGet({action:'adminCheck',token:SUP.tk});
+    const lic=await kcGet({action:'license',code:SUP.code,app:'pos-support',device:'KTN-ช่วยเหลือ'});lic.checkedAt=Date.now();
+    if(!S.lic||S.lic.code!==lic.code){S.demo=true;blankShop(lic,true)}
+    S.lic=lic;S.settings.device='KTN-ช่วยเหลือ';S.settings.mainDevice=true;
+    const j=await api('GET',{action:'getConfig',since:''});
+    if(j&&j.config){applyCfg(j.config,j.ver)}
+    if(!S.users.some(u=>u.id==='__ktn'))S.users.unshift(supUser());
+    S.settings.mainDevice=true;S.cfgHash=strHash(JSON.stringify(cfgPayload()));S.session={uid:'__ktn',at:Date.now()};
+    supOk=true;saveNow();render();toast('เข้าร้าน '+lic.name+' แล้ว')}
+  catch(e){supMsg=e.message==='LOGIN'?'สิทธิ์แอดมินหมดอายุ ให้ล็อกอินหน้าแอดมินใหม่แล้วกดปุ่มอีกครั้ง':'เข้าไม่ได้: '+e.message;renderLock()}}
+load();applyTheme();applyScale();render();checkCompat();pollQr();renderLicBar();licCheck(false);setInterval(()=>licCheck(false),3600000);if(SUP)supInit();
 if(!S.imgTrim){(async()=>{for(const m of S.menu){if(m.img&&/^data:image/.test(m.img)){const t=await shrinkImg(m.img,320);if(t)m.img=t}}S.imgTrim=1;saveNow();if(view==='sell')renderGrid()})()}
 setInterval(()=>{if(+S.settings.lockMin>0&&S.session&&Date.now()-lastAct>S.settings.lockMin*60000){S.session=null;actAs=null;closeModal();saveNow();render()}},15000);
 })();

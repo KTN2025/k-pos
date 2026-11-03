@@ -120,7 +120,8 @@ function shopSheet(code){const s=code?D.shops.find(x=>x.code===code):{code:'',na
   const ed=new Date(s.expiry),iso=ed.getFullYear()+'-'+String(ed.getMonth()+1).padStart(2,'0')+'-'+String(ed.getDate()).padStart(2,'0');
   $('#sheet').innerHTML=`<div class="sheet" data-x="1"><div class="in"><h2>${code?esc(s.name)+' <span class="pill '+s.state+'">'+ST[s.state]+'</span>':'เพิ่มร้านใหม่'}</h2>
     ${code?`<div class="card"><div style="display:flex;justify-content:space-between"><span>รหัสร้าน</span><b style="letter-spacing:.1em">${s.code}</b></div><div style="display:flex;justify-content:space-between"><span>ใช้ได้ถึง</span><b>${dt(s.expiry)}</b></div><div style="display:flex;justify-content:space-between"><span>ใช้งานล่าสุด</span><span>${s.lastSeen?dt(s.lastSeen)+' '+esc((s.sys||{}).lastDevice||''):'—'}</span></div>
-      <div class="btns">${[7,30,365].map(d=>`<button class="btn" data-add="${d}">+${d} วัน</button>`).join('')}</div></div>`:''}
+      <div class="btns">${[7,30,365].map(d=>`<button class="btn" data-add="${d}">+${d} วัน</button>`).join('')}</div>
+      <a class="btn p" style="display:flex;align-items:center;justify-content:center;text-decoration:none;margin-top:10px" href="./?support=${s.code}&tk=${encodeURIComponent(T)}" target="_blank" rel="noopener">🛠 เข้าช่วยเหลือร้าน (เมนู · PIN · ขาย)</a></div>`:''}
     <div class="field"><label>ชื่อร้าน</label><input id="e_name" value="${esc(s.name)}"></div>
     <div class="g2"><div class="field"><label>สาขา</label><input id="e_branch" value="${esc(s.branch)}"></div><div class="field"><label>เจ้าของ</label><input id="e_owner" value="${esc(s.owner)}"></div></div>
     <div class="g2"><div class="field"><label>เบอร์โทร</label><input id="e_phone" value="${esc(s.phone)}" inputmode="tel"></div><div class="field"><label>LINE</label><input id="e_line" value="${esc(s.line)}"></div></div>
