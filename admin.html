@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="K-Admin">
+<title>K-Central แอดมิน</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=Bai+Jamjuree:wght@600;700&display=swap">
+<style>
+:root{--brand:#0F5A48;--brand-2:#0B4337;--accent:#E3A21A;--bg:#EEF2EF;--surface:#fff;--sunk:#E3E9E5;--ink:#15231E;--muted:#5B6B64;--line:#D5DDD8;--danger:#B93A27;
+  --f:"Anuphan","Sukhumvit Set","Thonburi","Noto Sans Thai",system-ui,sans-serif;--fd:"Bai Jamjuree","Anuphan",system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root{--bg:#0D1412;--surface:#151F1C;--sunk:#1C2824;--ink:#E4ECE8;--muted:#93A39C;--line:#26342F;--brand:#3BAE8B;color-scheme:dark}}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 var(--f);padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer;border:0;background:none}
+.top{position:sticky;top:0;z-index:5;background:var(--brand-2);color:#fff;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 12px;display:flex;align-items:center;gap:10px}
+.top h1{font-family:var(--fd);font-size:20px;margin:0;flex:1}.top h1 span{color:var(--accent)}
+.top button{color:#fff;opacity:.85;font-weight:600}
+main{padding:14px 16px;max-width:760px;margin:0 auto;display:grid;gap:12px}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.kpi{background:var(--surface);border-radius:14px;padding:12px 14px}
+.kpi small{color:var(--muted)}.kpi b{display:block;font-family:var(--fd);font-size:26px}
+.kpi.hl{background:var(--brand);color:#fff}.kpi.hl small{color:#fff;opacity:.8}
+.card{background:var(--surface);border-radius:14px;padding:14px;display:grid;gap:8px}
+.sr{display:flex;gap:8px}.sr input{flex:1;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--surface);padding:0 12px}
+.chips{display:flex;gap:6px;overflow-x:auto}.chip{flex:none;height:34px;padding:0 12px;border-radius:17px;border:1px solid var(--line);background:var(--surface);font-weight:500}
+.chip.on{background:var(--ink);color:var(--surface)}
+.shop{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;background:var(--surface);border-radius:14px;padding:12px 14px;text-align:left;width:100%}
+.shop b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.shop small{color:var(--muted)}
+.pill{display:inline-block;font-size:12px;font-weight:700;border-radius:8px;padding:2px 8px;white-space:nowrap}
+.trial{background:#FBEFD2;color:#8A5A00}.active{background:#DCEDE6;color:#0F5A48}.grace{background:#FDE7C8;color:#9A4A00}.expired,.suspended{background:#F8E1DC;color:#B93A27}
+.pay{background:var(--surface);border-radius:14px;padding:14px;display:grid;gap:8px;border-left:6px solid var(--accent)}
+.pay img{max-width:100%;max-height:420px;border-radius:10px;border:1px solid var(--line);justify-self:start}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{height:46px;border-radius:12px;padding:0 16px;font-weight:700;background:var(--sunk)}
+.btn.p{background:var(--brand);color:#fff}.btn.d{background:#F8E1DC;color:var(--danger)}
+.field{display:grid;gap:4px}.field label{font-size:13px;color:var(--muted)}
+.field input,.field select,.field textarea{height:46px;border-radius:10px;border:1px solid var(--line);background:var(--surface);padding:0 12px;width:100%}
+.field textarea{height:70px;padding:10px 12px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+nav.bar{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));z-index:5}
+nav.bar button{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--muted);padding:6px 0;position:relative}
+nav.bar button.on{color:var(--brand);font-weight:700}
+nav.bar svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+nav.bar .bd{position:absolute;top:0;right:24%;background:var(--accent);color:#231600;font-size:11px;font-weight:700;border-radius:9px;min-width:18px;height:18px;line-height:18px;text-align:center}
+.sheet{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheet .in{background:var(--bg);width:100%;max-width:760px;max-height:92%;overflow:auto;border-radius:20px 20px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));display:grid;gap:10px}
+.sheet h2{font-family:var(--fd);margin:0;font-size:20px}
+.login{max-width:380px;margin:12vh auto;padding:0 16px;display:grid;gap:12px;text-align:center}
+.login h1{font-family:var(--fd);font-size:30px;margin:0}.login h1 span{color:var(--accent)}
+.err{color:var(--danger);font-weight:600}
+.toast{position:fixed;left:16px;right:16px;bottom:calc(86px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--surface);padding:12px 16px;border-radius:12px;text-align:center;z-index:30;font-weight:600}
+.lbl{color:var(--muted);font-size:13px}.num{font-variant-numeric:tabular-nums}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:10px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="sheet"></div>
+<div class="toast" id="toast" hidden></div>
+<script src="config.js"></script>
+<script>
+(function(){
+const API=window.K_CENTRAL||'';const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=n=>Number(n||0).toLocaleString('th-TH');const dt=ms=>ms?new Date(ms).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'}):'—';
+const DAY=864e5;let T='';try{T=localStorage.getItem('kc-token')||''}catch(e){}
+let D=null,tab='home',filter='all',q='';
+function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,2500)}
+async function post(b){const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({...b,token:T})});const j=await r.json();
+  if(j.error==='LOGIN'){T='';try{localStorage.removeItem('kc-token')}catch(e){}login();throw new Error('กรุณาเข้าสู่ระบบ')}if(j.error)throw new Error(j.error);return j}
+const ST={trial:'ทดลอง',active:'ใช้งาน',grace:'เลยกำหนด',expired:'หมดอายุ',suspended:'ระงับ'};
+function login(setup){$('#app').innerHTML=`<div class="login"><h1>K-<span>Central</span></h1><p class="lbl">${setup?'ตั้งรหัสแอดมินครั้งแรก (อย่างน้อย 6 ตัว)':'เข้าสู่ระบบแอดมิน'}</p>
+  <div class="field"><input type="password" id="pw" placeholder="รหัสแอดมิน" autocomplete="current-password"></div><div class="err" id="le"></div><button class="btn p" id="lg">${setup?'ตั้งรหัส':'เข้าสู่ระบบ'}</button>
+  ${API?'':'<p class="err">ยังไม่ได้ใส่ลิงก์ K-Central ใน config.js</p>'}</div>`;
+  $('#lg').onclick=async()=>{try{const j=await post({action:setup?'adminSetup':'adminLogin',password:$('#pw').value});T=j.token;try{localStorage.setItem('kc-token',T)}catch(e){}load()}catch(e){if(e.message==='SETUP')return login(true);$('#le').textContent=e.message}};
+  $('#pw').onkeydown=e=>{if(e.key==='Enter')$('#lg').click()}}
+async function load(){try{D=await post({action:'adminData'});render()}catch(e){if(T)toast(e.message)}}
+function counts(){const s=D.shops,now=D.now;return {all:s.length,trial:s.filter(x=>x.state==='trial').length,active:s.filter(x=>x.state==='active').length,
+  soon:s.filter(x=>x.expiry>now&&x.expiry-now<7*DAY&&x.state!=='suspended').length,expired:s.filter(x=>x.state==='expired'||x.state==='grace').length,
+  pend:D.payments.filter(p=>p.status==='รอตรวจ').length,month:D.payments.filter(p=>p.status!=='สลิปไม่ถูกต้อง'&&new Date(p.at).getMonth()===new Date().getMonth()&&new Date(p.at).getFullYear()===new Date().getFullYear()).reduce((a,p)=>a+p.price,0)}}
+function render(){const c=counts();
+  const body={home:homeV,shops:shopsV,pays:paysV,set:setV}[tab]();
+  $('#app').innerHTML=`<div class="top"><h1>K-<span>Central</span></h1><button id="rf">โหลดใหม่</button></div><main>${body}</main><footer>ระบบโดย KTN BUSINESS SOLUTION CO.,LTD</footer>
+  <nav class="bar">${[['home','ภาพรวม','<path d="M3 11 12 3l9 8v10H3z"/>'],['shops','ร้าน','<path d="M3 9h18l-2-5H5zM4 9v11h16V9M9 20v-6h6v6"/>'],['pays','สลิป','<rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 7h6M9 11h6M9 15h3"/>'],['set','ตั้งค่า','<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>']].map(([k,n,ic])=>`<button class="${tab===k?'on':''}" data-tab="${k}"><svg viewBox="0 0 24 24">${ic}</svg>${n}${k==='pays'&&c.pend?`<span class="bd">${c.pend}</span>`:''}</button>`).join('')}</nav>`;
+  $('#rf').onclick=load;bindAfter()}
+function homeV(){const c=counts();const soon=D.shops.filter(x=>x.expiry>D.now&&x.expiry-D.now<7*DAY&&x.state!=='suspended').sort((a,b)=>a.expiry-b.expiry);
+  return `<div class="kpis"><div class="kpi hl"><small>รายรับเดือนนี้</small><b class="num">฿${fmt(c.month)}</b></div><div class="kpi"><small>รอตรวจสลิป</small><b class="num">${c.pend}</b></div>
+    <div class="kpi"><small>ร้านใช้งาน</small><b class="num">${c.active}</b></div><div class="kpi"><small>ทดลองใช้</small><b class="num">${c.trial}</b></div>
+    <div class="kpi"><small>ใกล้หมด (7 วัน)</small><b class="num">${c.soon}</b></div><div class="kpi"><small>หมดอายุ</small><b class="num">${c.expired}</b></div></div>
+  <div class="btns"><button class="btn p" data-act="newShop">+ เพิ่มร้าน</button>${c.pend?'<button class="btn" data-tab="pays">ตรวจสลิป '+c.pend+' รายการ</button>':''}</div>
+  ${soon.length?`<h3 style="margin:6px 0 0">ใกล้หมดอายุ</h3>${soon.map(shopRow).join('')}`:''}
+  <h3 style="margin:6px 0 0">สมัครล่าสุด</h3>${D.shops.slice().sort((a,b)=>b.created-a.created).slice(0,5).map(shopRow).join('')||'<p class="lbl">ยังไม่มีร้าน</p>'}`}
+function shopRow(s){const left=Math.ceil((s.expiry-D.now)/DAY);return `<button class="shop" data-shop="${s.code}"><b>${esc(s.name)}${s.branch?' · '+esc(s.branch):''}</b><span class="pill ${s.state}">${ST[s.state]}</span>
+  <small>${s.code} · ${esc(s.phone||'')} · ${esc(s.plan||'')}</small><small class="num">${left>=0?'เหลือ '+left+' วัน':'เลย '+(-left)+' วัน'}</small></button>`}
+function shopsV(){const f={all:()=>1,trial:s=>s.state==='trial',active:s=>s.state==='active',soon:s=>s.expiry>D.now&&s.expiry-D.now<7*DAY,expired:s=>s.state==='expired'||s.state==='grace',suspended:s=>s.state==='suspended'}[filter];
+  const ql=q.toLowerCase();const list=D.shops.filter(s=>f(s)&&(!ql||[s.code,s.name,s.branch,s.phone,s.owner].join(' ').toLowerCase().includes(ql))).sort((a,b)=>a.expiry-b.expiry);
+  return `<div class="sr"><input id="q" placeholder="ค้นหา ชื่อร้าน รหัส เบอร์" value="${esc(q)}"><button class="btn p" data-act="newShop">+ ร้าน</button></div>
+  <div class="chips">${[['all','ทั้งหมด'],['active','ใช้งาน'],['trial','ทดลอง'],['soon','ใกล้หมด'],['expired','หมดอายุ'],['suspended','ระงับ']].map(([k,n])=>`<button class="chip ${filter===k?'on':''}" data-f="${k}">${n}</button>`).join('')}</div>
+  ${list.map(shopRow).join('')||'<p class="lbl">ไม่พบร้าน</p>'}`}
+function paysV(){const pend=D.payments.filter(p=>p.status==='รอตรวจ'),done=D.payments.filter(p=>p.status!=='รอตรวจ').slice(0,40);
+  return `<h3 style="margin:0">รอตรวจสลิป (${pend.length})</h3>${pend.map(p=>`<div class="pay"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc(p.shop)}</b><span class="lbl">${dt(p.at)} ${new Date(p.at).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})}</span></div>
+    <div>${esc(p.pkg)} · <b class="num">฿${fmt(p.price)}</b> · +${p.days>=36500?'ตลอด':p.days+' วัน'} · รหัส ${esc(p.code)}</div>${p.slip?`<img src="${p.slip}" alt="สลิป">`:''}
+    <div class="btns"><button class="btn d" data-rev="${p.id}" data-s="สลิปไม่ถูกต้อง">สลิปไม่ถูกต้อง · ตัดสิทธิ์</button><button class="btn p" data-rev="${p.id}" data-s="ยืนยัน">ยืนยันรับเงิน</button></div></div>`).join('')||'<p class="lbl">ไม่มีรายการรอตรวจ</p>'}
+  <h3 style="margin:8px 0 0">ประวัติ</h3><div class="card">${done.map(p=>`<div style="display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--line);padding:6px 0"><span>${esc(p.shop)}<br><small class="lbl">${esc(p.pkg)} · ${dt(p.at)}</small></span><span style="text-align:right"><b class="num">฿${fmt(p.price)}</b><br><span class="pill ${p.status==='ยืนยัน'?'active':'expired'}">${esc(p.status)}</span></span></div>`).join('')||'<span class="lbl">—</span>'}</div>`}
+function setV(){const s=D.settings;return `<div class="card"><h3 style="margin:0">ทั่วไป</h3>
+  <div class="field"><label>พร้อมเพย์รับเงินของ KTN (เบอร์/เลขบัตร/เลขนิติบุคคล)</label><input id="s_pp" value="${esc(s.promptpay)}" inputmode="numeric"></div>
+  <div class="g2"><div class="field"><label>ทดลองใช้ฟรี (วัน, 1–30)</label><input id="s_tr" type="number" value="${s.trialDays}"></div><div class="field"><label>ขายต่อได้หลังหมดอายุ (วัน)</label><input id="s_gr" type="number" value="${s.graceDays}"></div></div>
+  <div class="field"><label>ลิงก์ LINE ติดต่อ</label><input id="s_ln" value="${esc(s.line)}"></div><button class="btn p" data-act="saveSet">บันทึก</button></div>
+  <div class="card"><h3 style="margin:0">แพ็กเกจและราคา (ต่อร้าน/สาขา)</h3>${D.packages.map((p,i)=>`<div style="display:grid;grid-template-columns:1fr 70px 90px 40px;gap:6px;align-items:center">
+    <input class="pk" data-i="${i}" data-k="name" value="${esc(p.name)}" style="height:40px;border-radius:8px;border:1px solid var(--line);padding:0 8px;background:var(--surface)">
+    <input class="pk" data-i="${i}" data-k="days" type="number" value="${p.days}" title="จำนวนวัน" style="height:40px;border-radius:8px;border:1px solid var(--line);padding:0 6px;background:var(--surface)">
+    <input class="pk" data-i="${i}" data-k="price" type="number" value="${p.price}" title="ราคา" style="height:40px;border-radius:8px;border:1px solid var(--line);padding:0 6px;background:var(--surface)">
+    <input class="pk" data-i="${i}" data-k="on" type="checkbox" ${p.on?'checked':''} title="เปิดขาย" style="width:22px;height:22px"></div>`).join('')}
+    <span class="lbl">ชื่อ · จำนวนวัน · ราคา · เปิดขาย</span><button class="btn p" data-act="savePkg">บันทึกแพ็กเกจ</button></div>
+  <div class="card"><h3 style="margin:0">เปลี่ยนรหัสแอดมิน</h3><div class="field"><input type="password" id="op" placeholder="รหัสเดิม"></div><div class="field"><input type="password" id="np" placeholder="รหัสใหม่ (อย่างน้อย 6 ตัว)"></div><button class="btn" data-act="pw">เปลี่ยนรหัส</button><button class="btn" data-act="logout">ออกจากระบบ</button></div>`}
+function shopSheet(code){const s=code?D.shops.find(x=>x.code===code):{code:'',name:'',branch:'',owner:'',phone:'',line:'',status:'trial',plan:'',expiry:D.now+D.settings.trialDays*DAY,apps:'pos,ktime,kfc',note:''};
+  const ed=new Date(s.expiry),iso=ed.getFullYear()+'-'+String(ed.getMonth()+1).padStart(2,'0')+'-'+String(ed.getDate()).padStart(2,'0');
+  $('#sheet').innerHTML=`<div class="sheet" data-x="1"><div class="in"><h2>${code?esc(s.name)+' <span class="pill '+s.state+'">'+ST[s.state]+'</span>':'เพิ่มร้านใหม่'}</h2>
+    ${code?`<div class="card"><div style="display:flex;justify-content:space-between"><span>รหัสร้าน</span><b style="letter-spacing:.1em">${s.code}</b></div><div style="display:flex;justify-content:space-between"><span>ใช้ได้ถึง</span><b>${dt(s.expiry)}</b></div><div style="display:flex;justify-content:space-between"><span>ใช้งานล่าสุด</span><span>${s.lastSeen?dt(s.lastSeen)+' '+esc((s.sys||{}).lastDevice||''):'—'}</span></div>
+      <div class="btns">${[7,30,365].map(d=>`<button class="btn" data-add="${d}">+${d} วัน</button>`).join('')}</div></div>`:''}
+    <div class="field"><label>ชื่อร้าน</label><input id="e_name" value="${esc(s.name)}"></div>
+    <div class="g2"><div class="field"><label>สาขา</label><input id="e_branch" value="${esc(s.branch)}"></div><div class="field"><label>เจ้าของ</label><input id="e_owner" value="${esc(s.owner)}"></div></div>
+    <div class="g2"><div class="field"><label>เบอร์โทร</label><input id="e_phone" value="${esc(s.phone)}" inputmode="tel"></div><div class="field"><label>LINE</label><input id="e_line" value="${esc(s.line)}"></div></div>
+    <div class="g2"><div class="field"><label>สถานะ</label><select id="e_status">${['trial','active','suspended'].map(k=>`<option value="${k}" ${s.status===k?'selected':''}>${ST[k]}</option>`).join('')}</select></div><div class="field"><label>วันหมดอายุ</label><input id="e_exp" type="date" value="${iso}"></div></div>
+    <div class="field"><label>หมายเหตุ</label><textarea id="e_note">${esc(s.note||'')}</textarea></div>
+    <div class="btns"><button class="btn p" data-act="saveShop" data-code="${s.code}">บันทึก</button><button class="btn" data-x="1">ปิด</button></div></div></div>`;
+  $('#sheet').onclick=async e=>{if(e.target.dataset.x){$('#sheet').innerHTML='';return}
+    const a=e.target.closest('[data-add]');if(a){try{await post({action:'shopAddDays',code,days:+a.dataset.add});toast('เพิ่ม '+a.dataset.add+' วันแล้ว');$('#sheet').innerHTML='';load()}catch(er){toast(er.message)}return}
+    if(e.target.closest('[data-act="saveShop"]')){const v=id=>$('#'+id).value;const [y,m,d]=v('e_exp').split('-').map(Number);
+      try{const j=await post({action:'shopSave',shop:{code:s.code,name:v('e_name'),branch:v('e_branch'),owner:v('e_owner'),phone:v('e_phone'),line:v('e_line'),status:v('e_status'),expiry:new Date(y,m-1,d,23,59).getTime(),note:v('e_note')}});
+        toast(code?'บันทึกแล้ว':'เพิ่มร้านแล้ว รหัส '+j.code);$('#sheet').innerHTML='';load()}catch(er){toast(er.message)}}}}
+function bindAfter(){const qi=$('#q');if(qi)qi.oninput=e=>{q=e.target.value;const pos=e.target.selectionStart;render();const n=$('#q');n.focus();n.setSelectionRange(pos,pos)}}
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-tab]');if(t){tab=t.dataset.tab;render();scrollTo(0,0);return}
+  const f=e.target.closest('[data-f]');if(f){filter=f.dataset.f;render();return}
+  const sh=e.target.closest('[data-shop]');if(sh){shopSheet(sh.dataset.shop);return}
+  const rv=e.target.closest('[data-rev]');if(rv){if(rv.dataset.s==='สลิปไม่ถูกต้อง'&&!rv.dataset.ok){rv.dataset.ok=1;rv.textContent='กดอีกครั้งเพื่อยืนยันตัดสิทธิ์';return}
+    try{await post({action:'payReview',id:rv.dataset.rev,status:rv.dataset.s});toast(rv.dataset.s==='ยืนยัน'?'ยืนยันแล้ว':'ตัดสิทธิ์แล้ว');load()}catch(er){toast(er.message)}return}
+  const a=e.target.closest('[data-act]');if(!a||$('#sheet').contains(a))return;const act=a.dataset.act;
+  try{if(act==='newShop')shopSheet('');
+    if(act==='saveSet'){await post({action:'settingsSave',settings:{promptpay:$('#s_pp').value,trialDays:$('#s_tr').value,graceDays:$('#s_gr').value,line:$('#s_ln').value}});toast('บันทึกแล้ว');load()}
+    if(act==='savePkg'){const pk=D.packages.map(p=>({...p}));document.querySelectorAll('.pk').forEach(i=>{const p=pk[+i.dataset.i];p[i.dataset.k]=i.type==='checkbox'?i.checked:i.type==='number'?+i.value:i.value});await post({action:'pkgSave',packages:pk});toast('บันทึกแพ็กเกจแล้ว');load()}
+    if(act==='pw'){const j=await post({action:'adminPassword',oldPassword:$('#op').value,newPassword:$('#np').value});T=j.token;try{localStorage.setItem('kc-token',T)}catch(er){}toast('เปลี่ยนรหัสแล้ว')}
+    if(act==='logout'){T='';try{localStorage.removeItem('kc-token')}catch(er){}login()}}catch(er){toast(er.message)}});
+if(T)load();else login();
+})();
+</script>
+</body>
+</html>
