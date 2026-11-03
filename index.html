@@ -395,7 +395,7 @@ table.data tr.void td{color:var(--muted);text-decoration:line-through}
 (function(){
 'use strict';
 /* ================= utilities ================= */
-const KEY='ktnpos.v1';
+const KEY=window.K_CENTRAL?'kpos.v2':'ktnpos.v1'; // แยกที่เก็บจากแอปเก่า (ktn-pos) ที่อยู่โดเมนเดียวกัน
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
@@ -1908,6 +1908,7 @@ function actHTML(){const foot='<div class="lv">ระบบโดย KTN BUSINES
     <div class="sub">ยังไม่มีรหัสร้าน? <a href="${esc(appBase()+'start.html')}"><b>สมัครทดลองใช้ฟรี</b></a><br>เครื่องที่สองของร้านเดิม ใส่รหัสเดียวกันได้เลย เมนูและผู้ใช้จะดึงมาเอง</div></div>${foot}`}
 A.actGo=async()=>{const code=String(($('#actCode')||{}).value||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
   if(code.length<4){actMsg='กรุณาใส่รหัสร้าน';return renderLock()}
+  if(!KSRV&&!S.settings.gasUrl){actMsg='ยังไม่ได้ตั้งค่าเซิร์ฟเวอร์ K-POS ใน config.js';return renderLock()}
   if(!navigator.onLine){actMsg='ครั้งแรกต้องต่ออินเทอร์เน็ตเพื่อยืนยันรหัสร้าน';return renderLock()}
   actBusy=true;actMsg='';renderLock();
   try{const lic=await kcGet({action:'license',code,app:'pos',device:S.settings.device});lic.checkedAt=Date.now();
