@@ -1,3 +1,3 @@
 /* K-POS: ลิงก์เซิร์ฟเวอร์ */
 window.K_CENTRAL = 'https://script.google.com/macros/s/AKfycbyu3hDtnKR4A5IkuCRTIhS5TkvUEWTrfSXJQTwRFFoc-0UeqiZFkhwz7haQerw8KiUb/exec';
-window.K_POS_SERVER = '';
+window.K_POS_SERVER = 'https://script.google.com/macros/s/AKfycbz6IsvEYvremb4w_AXxYxzzpPUeInZckNGtMsTZtWsjHb8yCUbWJDM_knHSHCY_twr_JA/exec';
