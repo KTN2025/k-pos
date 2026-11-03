@@ -953,7 +953,7 @@ function setShop(){
     <div class="row2">${F('ชื่อเครื่องนี้','settings.device',st.device,{hint:'ใช้แยกบิลเวลามี iPad หลายเครื่อง เช่น iPad-1, iPad-2'})}${F('เงินทอนตั้งต้นเริ่มกะ (บาท)','settings.defaultFloat',st.defaultFloat,{type:'number'})}</div>
     <div class="sect"><h3>กะและสิทธิ์พนักงาน</h3></div>
     ${T('บังคับเปิดกะก่อนขาย','ขายไม่ได้จนกว่าจะเปิดกะและใส่เงินทอนตั้งต้น','settings.requireShift',st.requireShift)}
-    ${T('ส่วนลดต้องใช้ PIN ผู้จัดการ','พนักงานใส่ส่วนลดเองไม่ได้','settings.discountMgr',st.discountMgr)}
+    <p class="lbl" style="margin:0">สิทธิ์ใส่ส่วนลด ยกเลิกบิล ฯลฯ ตั้งได้ที่ ตั้งค่า › ผู้ใช้ & PIN</p>
     <div class="field"><label for="lockm">ล็อกหน้าจออัตโนมัติเมื่อไม่ได้ใช้งาน</label><select id="lockm" data-bind="settings.lockMin" data-num="1">${[[0,'ไม่ล็อก'],[2,'2 นาที'],[5,'5 นาที'],[15,'15 นาที'],[30,'30 นาที']].map(([v,t])=>`<option value="${v}" ${+st.lockMin===v?'selected':''}>${t}</option>`).join('')}</select><span class="hint">การยกเลิกบิลต้องใช้ PIN ผู้จัดการหรือเจ้าของเสมอ · ตั้ง PIN ได้ที่แท็บ ผู้ใช้ & PIN</span></div>
     <div class="sect"><h3>ประเภทการขาย</h3></div>
     ${T('กลับบ้าน','ออกเลขคิวอัตโนมัติ เริ่มใหม่ทุกวัน','settings.types.take',st.types.take)}
@@ -1191,7 +1191,7 @@ function applyCosts(){
 /* ================= actions ================= */
 const A={
   go(el){const v=el.dataset.v;actAs=null;clearTimeout(kdsT);
-    if((v==='settings'||v==='reports')&&!can('manager')){askPin(u=>{actAs=u;view=v;render()},'manager',v==='settings'?'เข้าหน้าตั้งค่า':'ดูรายงาน');return}
+    if((v==='settings'||v==='reports')&&!allowed(v)){askPerm(v,u=>{actAs=u;view=v;render()},v==='settings'?'เข้าหน้าตั้งค่า':'ดูรายงาน');return}
     view=v;render()},
   cat(el){curCat=el.dataset.c;renderCats();renderGrid()},
   setType(el){const t=el.dataset.t;const b=cur();
@@ -1214,7 +1214,7 @@ const A={
   tapTable(el){if(shiftGate()){A.shiftOpen();return}openTable(el.dataset.id);view='sell';render()},
   resume(el){S.cur=el.dataset.id;sellType=S.bills[S.cur].type;save();view='sell';render()},
   zone(el){planZone=el.dataset.id;renderTables()},
-  editPlan(){if(!can('manager')){askPin(u=>{actAs=u;settingsTab='plan';view='settings';render()},'manager','จัดผังร้าน');return}settingsTab='plan';view='settings';render()},
+  editPlan(){if(!allowed('plan')){askPerm('plan',u=>{actAs=u;settingsTab='plan';view='settings';render()},'จัดผังร้าน');return}settingsTab='plan';view='settings';render()},
   addItem(el){const m=S.menu.find(x=>x.id===el.dataset.id);if(!m)return;if(m.out)return toast(m.name+' หมดแล้ว');
     if(addToBill(m)){renderGrid();renderCart()}},
   toggleOpt(el){const n=el.dataset.n;itemCtx.sel.has(n)?itemCtx.sel.delete(n):itemCtx.sel.add(n);const note=$('#lnote').value;itemCtx.draw();$('#lnote').value=note},
@@ -1227,7 +1227,7 @@ const A={
   delLine(){const b=cur();b.items=b.items.filter(l=>l!==itemCtx.line);save();closeModal();renderGrid();renderCart()},
   qty(el){const b=cur();const l=b.items.find(x=>x.id===el.dataset.id);l.qty+=+el.dataset.d;if(l.qty<=0)b.items=b.items.filter(x=>x!==l);save();renderGrid();renderCart()},
   discount(){const b=cur();if(!b)return;
-    if(S.settings.discountMgr&&!can('manager')&&!discOk){askPin(()=>{discOk=true;A.discount();discOk=false},'manager','ใส่ส่วนลด');return}
+    if(!allowed('discount')&&!discOk){askPerm('discount',()=>{discOk=true;A.discount();discOk=false},'ใส่ส่วนลด');return}
     let t=b.disc?b.disc.t:'pct';
     modal(mh('ส่วนลดท้ายบิล')+`<div class="mb"><div class="seg" style="margin-bottom:12px"><button class="${t==='pct'?'on':''}" data-a="dt" data-t="pct">เปอร์เซ็นต์ %</button><button class="${t==='baht'?'on':''}" data-a="dt" data-t="baht">บาท ฿</button></div>
       <div class="field"><label for="dv">มูลค่าส่วนลด</label><input id="dv" type="number" inputmode="decimal" value="${b.disc?b.disc.v:''}"></div>
@@ -1254,7 +1254,7 @@ const A={
       <button class="btn" data-a="memberPick">สมาชิก/สะสมแต้ม</button>
       <button class="btn" data-a="printCheck">พิมพ์ใบแจ้งยอด (ก่อนชำระ)</button>
       <button class="btn danger" data-a="cancelBill">ยกเลิกบิลนี้ (ล้างรายการ)</button></div></div>`)},
-  moveTable(){pickTable(false,true)},
+  moveTable(){if(!allowed('move'))return askPerm('move',()=>pickTable(false,true),'ย้าย/รวมโต๊ะ');pickTable(false,true)},
   printCheck(){const b=cur();const c=calc(b);const o={no:'ใบแจ้งยอด',type:b.type,table:(S.tables.find(t=>t.id===b.tableId)||{}).name||'',queue:null,channel:b.channel,items:b.items.map(l=>({name:l.name,qty:l.qty,price:lineUnit(l),opts:(l.opts||[]).map(o=>o.name),note:l.note})),sub:c.sub,disc:c.disc,svc:c.svc,vat:c.vat,total:c.total,tenders:[],cash:null,paidAt:Date.now(),status:'open'};
     closeModal();printHTML(receiptHTML(o))},
   cancelBill(){modal(mh('ยกเลิกบิลนี้?')+`<div class="mb"><p>รายการทั้งหมดในบิลนี้จะถูกล้าง และโต๊ะจะกลับเป็นว่าง</p></div><div class="mf"><button class="btn" data-a="close">ไม่ใช่</button><button class="btn danger" data-a="cancelOk">ยกเลิกบิล</button></div>`)},
@@ -1273,7 +1273,7 @@ const A={
   printRc(el){const o=S.orders.find(x=>x.id===el.dataset.id);printHTML(receiptHTML(o))},
   viewOrder(el){showReceipt(S.orders.find(x=>x.id===el.dataset.id),false)},
   voidOrder(el){const id=el.dataset.id;const doit=()=>{const o=S.orders.find(x=>x.id===id);o.status='void';o.synced=false;o.voidAt=Date.now();saveNow();closeModal();render();syncSoon();toast('ยกเลิกบิลแล้ว')};
-    if(!can('manager')){askPin(doit,'manager','ยกเลิกบิล');return}
+    if(!allowed('void')){askPerm('void',doit,'ยกเลิกบิล');return}
     modal(mh('ยืนยันยกเลิกบิล')+`<div class="mb"><p>บิลจะถูกทำเครื่องหมายยกเลิก และไม่นับในยอดขาย</p></div><div class="mf"><button class="btn" data-a="close">ไม่ใช่</button><button class="btn danger" id="vok">ยกเลิกบิล</button></div>`);
     $('#vok').addEventListener('click',doit)},
   exportCsv(){const os=dayOrders(repDate);const rows=[['เลขบิล','เวลา','ประเภท','โต๊ะ/คิว','ช่องทาง','รายการ','ยอดก่อนลด','ส่วนลด','ค่าบริการ','VAT','ยอดสุทธิ','ต้นทุน','ชำระโดย','ไทยช่วยไทย-รัฐ','ไทยช่วยไทย-ลูกค้า','สถานะ']];
@@ -1349,16 +1349,21 @@ const RANK={staff:1,manager:2,owner:3};
 const ROLE_TH={staff:'พนักงาน',manager:'ผู้จัดการ',owner:'เจ้าของ'};
 function me(){return S.session?S.users.find(u=>u.id===S.session.uid)||null:null}
 function can(min){const u=actAs||me();return !!u&&RANK[u.role]>=RANK[min||'staff']}
-let pinBuf='',pinCb=null,pinMin='manager',pinTitle='';
-function askPin(cb,min,title){pinBuf='';pinCb=cb;pinMin=min||'manager';pinTitle=title||'';drawPin()}
+const PERMS=[['reports','ดูรายงานยอดขาย',0,1],['settings','เข้าหน้าตั้งค่า (เมนู ราคา ร้าน)',0,1],['plan','จัดผังร้าน/โต๊ะ',0,1],['discount','ใส่ส่วนลด',1,1],['void','ยกเลิกบิล',0,1],['move','ย้าย/รวมโต๊ะ',1,1],['moveDel','ลบรายการเงินเข้า-ออกในกะ',0,1],['stockAdj','ปรับยอดสต๊อก (ลด/ตั้งยอด)',0,1],['memberPts','แก้แต้มสมาชิก',0,1],['kfc','เปิดหน้าต้นทุน (K-Food cost)',0,1]];
+function perms(){const p=S.settings.perms;if(p&&p.staff&&p.manager)return p;
+  const o={staff:{},manager:{}};PERMS.forEach(([k,,s,m])=>{o.staff[k]=!!s;o.manager[k]=!!m});if(S.settings.discountMgr)o.staff.discount=false;S.settings.perms=o;return o}
+function allowed(key,u){u=u||actAs||me();if(!u)return false;if(u.role==='owner'||u.id==='__ktn')return true;const p=perms()[u.role]||{};return !!p[key]}
+function askPerm(key,cb,title){askPin(cb,'staff',title);pinPerm=key;drawPin()}
+let pinBuf='',pinCb=null,pinMin='manager',pinTitle='',pinPerm=null;
+function askPin(cb,min,title){pinBuf='';pinCb=cb;pinMin=min||'manager';pinPerm=null;pinTitle=title||'';drawPin()}
 function dots(n){return `<div class="pindots">${Array.from({length:Math.max(4,n)},(_,i)=>`<i class="${i<n?'f':''}"></i>`).join('')}</div>`}
 function padHTML(act){return `<div class="pinpad">${['1','2','3','4','5','6','7','8','9','C','0','⌫'].map(k=>`<button data-a="${act}" data-k="${k}">${k}</button>`).join('')}</div>`}
-function drawPin(msg){modal(mh('ใส่ PIN '+ROLE_TH[pinMin]+(pinMin!=='owner'?'หรือเจ้าของ':''))+`<div class="mb">${pinTitle?`<p class="lbl" style="text-align:center;margin:0 0 12px">เพื่อ${esc(pinTitle)}</p>`:''}${dots(pinBuf.length)}<p style="text-align:center;color:var(--danger);min-height:22px;margin:8px 0 0">${msg||''}</p>${padHTML('pinKey')}</div>`)}
+function drawPin(msg){modal(mh(pinPerm?'ใส่ PIN ผู้มีสิทธิ์':'ใส่ PIN '+ROLE_TH[pinMin]+(pinMin!=='owner'?'หรือเจ้าของ':''))+`<div class="mb">${pinTitle?`<p class="lbl" style="text-align:center;margin:0 0 12px">เพื่อ${esc(pinTitle)}</p>`:''}${dots(pinBuf.length)}<p style="text-align:center;color:var(--danger);min-height:22px;margin:8px 0 0">${msg||''}</p>${padHTML('pinKey')}</div>`)}
 function pinMax(){return Math.max(4,...S.users.map(u=>String(u.pin).length))}
 function pinStep(buf,k){if(k==='⌫')return buf.slice(0,-1);if(k==='C')return '';return buf.length<6?buf+k:buf}
 A.pinKey=el=>{pinBuf=pinStep(pinBuf,el.dataset.k);
   const u=S.users.find(x=>x.pin===pinBuf);
-  if(u){if(RANK[u.role]>=RANK[pinMin]){const cb=pinCb;closeModal();cb&&cb(u);return}pinBuf='';return drawPin('PIN นี้ไม่มีสิทธิ์ทำรายการนี้')}
+  if(u){if(pinPerm?allowed(pinPerm,u):RANK[u.role]>=RANK[pinMin]){const cb=pinCb;pinPerm=null;closeModal();cb&&cb(u);return}pinBuf='';return drawPin('PIN นี้ไม่มีสิทธิ์ทำรายการนี้')}
   if(pinBuf.length>=pinMax()||(pinBuf.length>=4&&!S.users.some(x=>x.pin.length>pinBuf.length))){pinBuf='';return drawPin('PIN ไม่ถูกต้อง')}
   drawPin()};
 
@@ -1386,7 +1391,7 @@ function renderLock(){
 A.lockKey=el=>{lockBuf=pinStep(lockBuf,el.dataset.k);lockMsg='';
   const u=S.users.find(x=>x.pin===lockBuf);
   if(u){S.session={uid:u.id,at:Date.now()};lockBuf='';actAs=null;lastAct=Date.now();saveNow();
-    if(view==='settings'||view==='reports'){if(!can('manager'))view='sell'}
+    if(view==='settings'||view==='reports'){if(!allowed(view))view='sell'}
     render();toast('สวัสดี '+u.name);return}
   if(lockBuf.length>=pinMax()||(lockBuf.length>=4&&!S.users.some(x=>x.pin.length>lockBuf.length))){lockBuf='';lockMsg='PIN ไม่ถูกต้อง'}
   renderLock()};
@@ -1401,10 +1406,19 @@ A.lockNow=()=>{S.session=null;actAs=null;closeModal();saveNow();render()};
 document.addEventListener('pointerdown',()=>{lastAct=Date.now()},true);
 
 /* users settings (owner) */
+function permTable(){const p=perms(),ed=can('owner');
+  return `<div class="sect"><h3>สิทธิ์การใช้งาน</h3></div>
+  <p class="lbl" style="margin:0">เจ้าของทำได้ทุกอย่าง · ถ้าไม่มีสิทธิ์ ระบบจะให้คนที่มีสิทธิ์ใส่ PIN อนุมัติ${ed?'':' · <b>เฉพาะเจ้าของแก้ตารางนี้ได้</b>'}</p>
+  <div style="overflow-x:auto;max-width:620px;background:var(--card);border:1px solid var(--line);border-radius:14px"><table style="width:100%;border-collapse:collapse;min-width:380px;font-size:15px;color:var(--ink)">
+  <thead><tr style="background:var(--sunk)"><th style="text-align:left;padding:10px 14px">สิทธิ์</th><th style="width:96px;padding:10px 4px">พนักงาน</th><th style="width:96px;padding:10px 4px">ผู้จัดการ</th></tr></thead><tbody>
+  ${PERMS.map(([k,l])=>`<tr style="border-top:1px solid var(--line)"><td style="padding:10px 14px;text-align:left">${esc(l)}</td>${['staff','manager'].map(r=>`<td style="text-align:center"><input type="checkbox" data-a="permSet" data-r="${r}" data-k="${k}" ${p[r][k]?'checked':''} ${ed?'':'disabled'} style="width:24px;height:24px;accent-color:var(--brand)" aria-label="${esc(l)} ${r==='staff'?'พนักงาน':'ผู้จัดการ'}"></td>`).join('')}</tr>`).join('')}
+  </tbody></table></div>`}
+A.permSet=el=>{if(!can('owner')){el.checked=!el.checked;return toast('เฉพาะเจ้าของแก้สิทธิ์ได้')}const p=perms();p[el.dataset.r][el.dataset.k]=el.checked;save();toast('บันทึกสิทธิ์แล้ว · กด 💾 บันทึกทั้งหมด เพื่อส่งไปเครื่องอื่น')};
 function setUsers(){
   $('#sbody').innerHTML=`<div class="form">
-    <div class="note info">PIN แต่ละคนต้องไม่ซ้ำกัน (4–6 หลัก) · <b>พนักงาน</b> ขาย เปิด/ปิดกะ บันทึกเงินเข้าออก · <b>ผู้จัดการ</b> เพิ่ม: ยกเลิกบิล รายงาน แก้เมนู/โต๊ะ/การชำระเงิน · <b>เจ้าของ</b> ทำได้ทุกอย่าง รวมถึงผู้ใช้ การเชื่อมต่อ และข้อมูล</div>
+    <div class="note info">PIN แต่ละคนต้องไม่ซ้ำกัน (4–6 หลัก) · <b>เจ้าของ</b> ทำได้ทุกอย่าง · สิ่งที่<b>พนักงาน</b>และ<b>ผู้จัดการ</b>ทำได้ ตั้งในตาราง “สิทธิ์การใช้งาน” ด้านล่าง</div>
     <div style="display:flex;gap:8px"><button class="btn primary" data-a="userNew">+ เพิ่มผู้ใช้</button></div>
+    ${permTable()}
     <div class="mlist">${S.users.filter(u=>u.id!=='__ktn').map(u=>`<button class="mrow" data-a="userEdit" data-id="${u.id}" style="grid-template-columns:52px minmax(0,1fr) auto"><span class="th" style="border-radius:50%;background:var(--accent-soft)">${esc(initials(u.name))}</span><span class="mi"><b>${esc(u.name)}</b><small>PIN ${SUP?'<b style="letter-spacing:2px">'+esc(u.pin)+'</b>':'•'.repeat(u.pin.length)}</small></span><span class="pill ${u.role==='owner'?'warn':u.role==='manager'?'ok':''}">${ROLE_TH[u.role]}</span></button>`).join('')}</div>
   </div>`;
 }
@@ -1476,7 +1490,7 @@ A.cmr=el=>{$('#cm_r').value=el.dataset.r;document.querySelectorAll('[data-a="cmr
 A.cashMoveOk=el=>{const amt=r2(+$('#cm_amt').value);if(!(amt>0))return toast('ใส่จำนวนเงินก่อน');const u=me();
   S.shift.moves.push({t:Date.now(),type:el.dataset.t,amount:amt,reason:$('#cm_r').value.trim()||(el.dataset.t==='out'?'เงินออก':'เงินเข้า'),by:u?u.name:''});
   S.shift.synced=false;saveNow();A.shiftPanel();toast('บันทึกแล้ว')};
-A.moveDel=el=>{const doit=()=>{S.shift.moves.splice(+el.dataset.i,1);S.shift.synced=false;saveNow();A.shiftPanel()};if(can('manager'))doit();else askPin(doit,'manager','ลบรายการเงินเข้าออก')};
+A.moveDel=el=>{const doit=()=>{S.shift.moves.splice(+el.dataset.i,1);S.shift.synced=false;saveNow();A.shiftPanel()};if(allowed('moveDel'))doit();else askPerm('moveDel',doit,'ลบรายการเงินเข้าออก')};
 let countDraft=null;
 A.shiftClose=()=>{const sh=S.shift;const sm=shiftSummary(sh);
   const open=Object.values(S.bills).filter(b=>b.items.length);
@@ -1800,7 +1814,7 @@ function setMembers(){const ms=mset();
   $('#msearch').addEventListener('input',draw);draw()}
 A.memberEdit=el=>{const m=findMember(el.dataset.p);modal(mh('แก้ไขสมาชิก '+m.phone)+`<div class="mb"><div class="form"><div class="field"><label for="me_n">ชื่อ</label><input id="me_n" value="${esc(m.name||'')}"></div><div class="field"><label for="me_p">แต้มคงเหลือ</label><input id="me_p" type="number" value="${m.points}"></div></div></div><div class="mf"><button class="btn" data-a="close">ยกเลิก</button><button class="btn primary" data-a="memberSave" data-p="${m.phone}">บันทึก</button></div>`)};
 A.memberSave=el=>{const doit=()=>{const m=findMember(el.dataset.p);m.name=$('#me_n').value.trim();m.points=Math.max(0,Math.floor(+$('#me_p').value||0));m.updatedAt=Date.now();m.synced=false;saveNow();closeModal();setMembers()};
-  if(can('manager'))doit();else askPin(doit,'manager','แก้แต้มสมาชิก')};
+  if(allowed('memberPts'))doit();else askPerm('memberPts',doit,'แก้แต้มสมาชิก')};
 async function syncMembers(){if(!srv()||!navigator.onLine)return;
   const pend=S.members.filter(m=>!m.synced);
   try{if(pend.length){const j=await api('POST',null,{action:'members',members:pend});const ok=new Set(j.saved||[]);pend.forEach(m=>{if(ok.has(m.phone))m.synced=true})}
@@ -1829,7 +1843,7 @@ A.stockAct=el=>{const i=S.stockCache.items.find(x=>x.id===el.dataset.id);const t
   const p=$('#sa_p');if(p)p.addEventListener('input',()=>{$('#sa_q').value=r2((+p.value||0)*i.buyQty)})};
 A.stockSave=async el=>{const t=el.dataset.t,id=el.dataset.id;const q=+$('#sa_q').value;if(isNaN(q))return toast('ใส่จำนวนก่อน');const u=me();
   const go=async()=>{try{await api('POST',null,{action:'stockAdj',id,type:t,qty:q,note:$('#sa_n')?$('#sa_n').value:'',by:u?u.name:''});closeModal();toast('บันทึกแล้ว');A.stockLoad()}catch(e){toast('บันทึกไม่สำเร็จ: '+e.message)}};
-  if(t==='in'||can('manager'))go();else askPin(go,'manager','ปรับยอดสต๊อก')};
+  if(t==='in'||allowed('stockAdj'))go();else askPerm('stockAdj',go,'ปรับยอดสต๊อก')};
 
 /* ================= v3: BRANCH REPORT ================= */
 let brDays=7,brData=null;
@@ -1995,8 +2009,8 @@ A.kfcOpen=()=>{if(!shopCode())return toast('ต้องใช้รหัสร
       const j=await api('POST',null,SUP?{action:'kfcLogin',adminToken:SUP.tk}:{action:'kfcLogin',pin:u.pin});
       try{localStorage.setItem('kfc_'+shopCode()+'_tok',j.token)}catch(e){}
       kfcFrame()}catch(e){modal(mh('เปิดหน้าต้นทุนไม่ได้')+`<div class="mb"><p>${esc(e.message)}</p></div><div class="mf"><button class="btn primary" data-a="close">ตกลง</button></div>`)}};
-  const u=me();if(SUP)return go(null);if(u&&(u.role==='owner'||u.role==='manager'))return go(u);
-  askPin(x=>go(x),'manager','เปิดหน้าต้นทุน')};
+  const u=me();if(SUP)return go(null);if(u&&allowed('kfc',u))return go(u);
+  askPerm('kfc',x=>go(x),'เปิดหน้าต้นทุน')};
 function kfcFrame(){let o=$('#kfcBox');if(o)o.remove();
   o=document.createElement('div');o.id='kfcBox';
   o.style.cssText='position:fixed;top:0;left:0;width:var(--appW,100%);height:var(--appH,100%);z-index:65;background:#fff;display:flex;flex-direction:column';
