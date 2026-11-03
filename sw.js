@@ -1,6 +1,6 @@
 /* K-POS – service worker: ทำให้เปิดแอปได้แม้ไม่มีอินเทอร์เน็ต */
-const CACHE='kpos-v12';
-const SHELL=['./','./index.html','./manifest.json','./icon-180.png','./icon-192.png','./icon-512.png','./order.html','./config.js','./start.html',
+const CACHE='kpos-v13';
+const SHELL=['./','./index.html','./manifest.json','./icon-180.png','./icon-192.png','./icon-512.png','./order.html','./config.js','./start.html','./kfc.html',
   'https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js'];
 self.addEventListener('install',e=>{
   e.waitUntil(caches.open(CACHE).then(c=>Promise.all(SHELL.map(u=>c.add(new Request(u,{mode:u.startsWith('http')?'cors':'same-origin'})).catch(()=>{})))).then(()=>self.skipWaiting()));
@@ -15,7 +15,7 @@ self.addEventListener('fetch',e=>{
   if(url.hostname.includes('script.google')||url.hostname.includes('googleusercontent')) return;
   // หน้าแอป: ใช้เน็ตก่อน (ได้เวอร์ชันใหม่) ถ้าออฟไลน์ใช้แคช
   if(req.mode==='navigate'){
-    const page=/\/(order|start|admin)\.html$/.test(url.pathname)?req:'./index.html';
+    const page=/\/(order|start|admin|kfc)\.html$/.test(url.pathname)?req:'./index.html';
     e.respondWith(fetch(req).then(r=>{if(r.ok){const cp=r.clone();caches.open(CACHE).then(c=>c.put(page,cp))}return r}).catch(()=>caches.match(page,{ignoreSearch:true}).then(h=>h||caches.match('./index.html'))));
     return;
   }

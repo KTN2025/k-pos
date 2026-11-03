@@ -370,6 +370,7 @@ table.data tr.void td{color:var(--muted);text-decoration:line-through}
     <button class="nav" data-a="go" data-v="tables"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><circle cx="17.5" cy="17.5" r="3.5"/></svg>โต๊ะ<span class="badge" id="busyBadge" hidden></span></button>
     <button class="nav" data-a="go" data-v="kitchen" id="navKitchen" hidden><svg viewBox="0 0 24 24"><path d="M6 13.9A4 4 0 0 1 7 6a5 5 0 0 1 10 0 4 4 0 0 1 1 7.9V20H6z"/><path d="M6 17h12"/></svg>ครัว</button>
     <button class="nav" data-a="go" data-v="stock"><svg viewBox="0 0 24 24"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>สต๊อก</button>
+    <button class="nav" data-a="kfcOpen" id="kfcNav" hidden><svg viewBox="0 0 24 24"><path d="M12 2v20M17 6.5c0-1.9-2.2-3.5-5-3.5s-5 1.6-5 3.5S9.2 10 12 10s5 1.6 5 3.5S14.8 17 12 17s-5-1.6-5-3.5"/></svg>ต้นทุน</button>
     <button class="nav" data-a="go" data-v="reports"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>รายงาน</button>
     <button class="nav" data-a="go" data-v="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>ตั้งค่า</button>
     <div class="spacer"></div>
@@ -1069,7 +1070,7 @@ function setLink(){
     <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" data-a="testConn">ทดสอบการเชื่อมต่อ</button><button class="btn" data-a="syncNow">ซิงก์บิลตอนนี้</button></div>
     <div class="sect"><h3>K-Food cost (ระบบคำนวณต้นทุนอาหาร)</h3></div>
     <p class="lbl" style="margin:0">Code.gs ของ POS อ่านแท็บ “สูตร” ของ KTN ต้นทุนอาหาร (เฉพาะประเภทสินค้า) แล้วส่งต้นทุนต่อหน่วย ราคาขาย และสาขากลับมา POS จับคู่ด้วยรหัสสูตร (ครั้งแรกจับคู่ด้วยชื่อ) เลือกสาขาเพื่อดึงเฉพาะเมนูของร้านนั้นได้ · สาขาที่เลือกอยู่: <b>${esc(S.settings.kfcShop||'ทุกสาขา')}</b></p>
-    ${licOn()?F('ลิงก์ Google Sheet ของ K-Food cost','settings.kfcSheetId',S.settings.kfcSheetId||'',{ph:'https://docs.google.com/spreadsheets/d/...',hint:'วางลิงก์ชีตต้นทุนของร้าน แล้วแชร์ชีตนั้นให้อีเมลของระบบ K-POS (ดูคู่มือ) · ต้องเปิด “เครื่องหลัก” เพื่อส่งค่าขึ้นเซิร์ฟเวอร์'}):''}
+    ${licOn()?F('ลิงก์ Google Sheet ของ K-Food cost','settings.kfcSheetId',S.settings.kfcSheetId||'',{ph:'https://docs.google.com/spreadsheets/d/...',hint:'<b>ปล่อยว่างไว้</b> = ใช้ต้นทุนในแอป (เมนู ต้นทุน ด้านซ้าย) · ใส่ลิงก์เฉพาะร้านที่ยังใช้ K-Food cost แบบ Sheet เดิมต่อ (ต้องแชร์ Sheet ให้อีเมลระบบ) · ถ้าจะย้ายข้อมูลเข้ามา ใช้ปุ่ม “นำเข้า” ในหน้า ต้นทุน › ตั้งค่า'}):''}
     <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn accent" data-a="pullCosts">ดึงต้นทุนล่าสุด</button></div>
     <p class="lbl" style="margin:0">${cc.at?'ดึงล่าสุด '+dstr(cc.at)+' '+tstr(cc.at)+' · '+cc.items.length+' สูตร':'ยังไม่เคยดึงต้นทุน'}</p>
     <div class="sect"><h3>ใช้หลายเครื่องร่วมกัน</h3></div>
@@ -1718,7 +1719,7 @@ A.qrTables=()=>{if(!srv())return toast('ต้องใส่ลิงก์ Web
   const test=orderUrl(list[0]&&list[0].t);
   modal(mh('QR สั่งอาหาร ('+cards.length+')')+`<div class="mb"><div class="note info" style="margin-bottom:12px">ลิงก์ใน QR: <b style="word-break:break-all">${esc(orderUrl(null).split('?')[0])}</b><br>ก่อนพิมพ์ให้กด <a href="${esc(test)}" target="_blank" rel="noopener">เปิดทดสอบ</a> ต้องเห็นหน้าเมนูร้าน ถ้าขึ้น 404 แปลว่ายังไม่ได้อัปโหลด order.html ขึ้น GitHub</div><div class="optgrid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr))">${cards.map(c=>`<div class="panel" style="text-align:center;padding:10px"><img src="${c.img}" alt="QR ${esc(c.label)}" style="width:100%;background:#fff;border-radius:8px"><b>${esc(c.label)}</b></div>`).join('')}</div></div>
     <div class="mf"><button class="btn primary" data-a="qrPrint">พิมพ์ทั้งหมด</button></div>`,'wide')};
-A.qrPrint=()=>printHTML((window._qrCards||[]).map(c=>`<div class="receipt" style="page-break-after:always;text-align:center"><div class="big">${esc(S.settings.shopName)}</div><div style="font-size:22px;font-weight:700;margin:6px 0">${esc(c.label)}</div><img src="${c.img}" style="width:62mm;height:62mm" alt=""><div>สแกนเพื่อดูเมนูและสั่งอาหาร</div></div>`).join(''));
+A.qrPrint=()=>printHTML((window._qrCards||[]).map(c=>`<div class="receipt" style="page-break-after:always;text-align:center"><div class="big">${esc(S.settings.shopName)}</div><div style="font-size:22px;font-weight:700;margin:6px 0">${esc(c.label)}</div><img src="${c.img}" style="width:62mm;height:62mm" alt=""><div>สแกนเพื่อดูเมนูและสั่งอาหาร</div><div style="margin-top:8px;border-top:1px dashed #000;padding-top:6px;font-size:11px;line-height:1.5">สั่งอาหารผ่านระบบ <b style="font-size:14px">K-POS</b><br>ระบบโดย KTN BUSINESS SOLUTION CO.,LTD<br>สนใจใช้ระบบนี้ที่ร้านคุณ LINE: lin.ee/RmteuQA</div></div>`).join(''));
 
 /* auto-push menu/tables for QR page & other devices */
 function cfgPayload(){const c=JSON.parse(JSON.stringify({users:S.users.filter(u=>u.id!=='__ktn'),settings:S.settings,pay:S.pay,cats:S.cats,menu:S.menu,zones:S.zones,tables:S.tables,decos:S.decos}));c.menu.forEach(m=>{m.img='';delete m.imgSrc});c.settings.qrImage='';delete c.settings.device;return c}
@@ -1883,7 +1884,7 @@ async function licCheck(force){if(!licOn()||!shopCode()||!navigator.onLine)retur
   try{const j=await kcGet({action:'license',code:shopCode(),app:'pos',device:S.settings.device});S.lic={...S.lic,...j,checkedAt:Date.now()};saveNow()}
   catch(e){if(force)toast('ตรวจสิทธิ์ไม่สำเร็จ: '+e.message)}
   renderLicBar()}
-function renderLicBar(){const el=$('#licBar');if(!el)return;const l=S.lic;
+function renderLicBar(){const kn=$('#kfcNav');if(kn)kn.hidden=!shopCode();const el=$('#licBar');if(!el)return;const l=S.lic;
   if(!licOn()||!l||!l.code){el.hidden=true;return}
   if(SUP){el.hidden=false;el.className='licbar bad';el.innerHTML=`<span>🛠 โหมดช่วยเหลือร้าน <b>${esc(l.name||l.code)}</b> (${esc(l.code)}) · แก้แล้วเครื่องร้านได้รับภายใน 1 นาที · บิลที่ขายจากที่นี่เป็นของเครื่อง “KTN-ช่วยเหลือ”</span><button class="btn sm" data-a="supPush">ส่งการตั้งค่าตอนนี้</button>`;return}
   const dl=l.daysLeft,gl=Math.ceil(((l.graceUntil||0)-Date.now())/86400000);let msg='',bad=false;
@@ -1954,6 +1955,22 @@ A.saveAll=async()=>{const ae=document.activeElement;if(ae&&ae.blur)ae.blur();
   try{await sync(false)}catch(e){}
   if(S.settings.mainDevice||SUP)toast(pushed?'✅ บันทึกแล้ว · เครื่องอื่นในร้านจะได้รับภายใน 1 นาที':'บันทึกในเครื่องแล้ว แต่ส่งขึ้นเซิร์ฟเวอร์ไม่สำเร็จ ลองกดอีกครั้ง');
   else toast('✅ บันทึกในเครื่องนี้แล้ว · เครื่องนี้ไม่ใช่เครื่องหลัก เมนู/ราคาให้แก้ที่เครื่องหลัก')};
+/* ===== K-Food cost ในแอป (เมนู ต้นทุน) ===== */
+A.kfcOpen=()=>{if(!shopCode())return toast('ต้องใช้รหัสร้าน K-POS ก่อน');if(!navigator.onLine)return toast('หน้าต้นทุนต้องต่ออินเทอร์เน็ต');
+  const go=async u=>{toast('กำลังเปิดหน้าต้นทุน…');
+    try{if(!SUP&&S.settings.mainDevice){S.cfgHash='';await autoPushCfg()}
+      const j=await api('POST',null,SUP?{action:'kfcLogin',adminToken:SUP.tk}:{action:'kfcLogin',pin:u.pin});
+      try{localStorage.setItem('kfc_'+shopCode()+'_tok',j.token)}catch(e){}
+      kfcFrame()}catch(e){modal(mh('เปิดหน้าต้นทุนไม่ได้')+`<div class="mb"><p>${esc(e.message)}</p></div><div class="mf"><button class="btn primary" data-a="close">ตกลง</button></div>`)}};
+  const u=me();if(SUP)return go(null);if(u&&(u.role==='owner'||u.role==='manager'))return go(u);
+  askPin(x=>go(x),'manager','เปิดหน้าต้นทุน')};
+function kfcFrame(){let o=$('#kfcBox');if(o)o.remove();
+  o=document.createElement('div');o.id='kfcBox';
+  o.style.cssText='position:fixed;top:0;left:0;width:var(--appW,100%);height:var(--appH,100%);z-index:65;background:#fff;display:flex;flex-direction:column';
+  o.innerHTML=`<div style="display:flex;align-items:center;gap:10px;padding:6px 12px;background:#D62828;color:#fff;font-weight:700"><button class="btn sm" data-a="kfcClose" style="background:#fff;color:#D62828">← กลับ K-POS</button><span>K-Food cost · ${esc(S.settings.shopName||'')}</span></div><iframe src="${esc(appBase()+'kfc.html?shop='+encodeURIComponent(shopCode()))}" style="flex:1;border:0;width:100%" title="K-Food cost"></iframe>`;
+  document.body.appendChild(o)}
+A.kfcClose=()=>{const o=$('#kfcBox');if(o)o.remove();api('GET',{action:'costs'}).then(j=>{S.costCache={at:Date.now(),items:j.items||[]};applyCosts()}).catch(()=>{})};
+window.addEventListener('message',e=>{if(e.data==='kfc-close')A.kfcClose()});
 /* ===== โหมดช่วยเหลือร้าน (เปิดจากหน้าแอดมิน K-Central) ===== */
 let supOk=false,supMsg='';
 function supUser(){return {id:'__ktn',name:'KTN ช่วยเหลือ',role:'owner',pin:''}}
