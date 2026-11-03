@@ -1710,11 +1710,17 @@ function appBase(){
 }
 function orderUrl(t){const base=appBase();
   return base.replace(/\/?$/,'/')+'order.html?api='+encodeURIComponent(srv())+(shopCode()?'&shop='+shopCode():'')+(t?'&t='+encodeURIComponent(t.id)+'&n='+encodeURIComponent(t.name):'')}
-function qrDataUrl(text,size){try{const q=qrcode(0,'M');q.addData(text);q.make();const n=q.getModuleCount(),m=3,c=document.createElement('canvas');c.width=c.height=size;const x=c.getContext('2d'),cell=size/(n+m*2);
-  x.fillStyle='#fff';x.fillRect(0,0,size,size);x.fillStyle='#000';for(let r=0;r<n;r++)for(let k=0;k<n;k++)if(q.isDark(r,k))x.fillRect(Math.floor((k+m)*cell),Math.floor((r+m)*cell),Math.ceil(cell),Math.ceil(cell));return c.toDataURL()}catch(e){return ''}}
+function qrDataUrl(text,size,logo){try{const q=qrcode(0,logo?'H':'M');q.addData(text);q.make();const n=q.getModuleCount(),m=3,c=document.createElement('canvas');c.width=c.height=size;const x=c.getContext('2d'),cell=size/(n+m*2);
+  x.fillStyle='#fff';x.fillRect(0,0,size,size);x.fillStyle='#000';for(let r=0;r<n;r++)for(let k=0;k<n;k++)if(q.isDark(r,k))x.fillRect(Math.floor((k+m)*cell),Math.floor((r+m)*cell),Math.ceil(cell),Math.ceil(cell));
+  if(logo){const L=Math.round(size*.22),o=(size-L)/2,p=Math.round(L*.12),rr=(X,Y,W,H,R)=>{x.beginPath();x.moveTo(X+R,Y);x.arcTo(X+W,Y,X+W,Y+H,R);x.arcTo(X+W,Y+H,X,Y+H,R);x.arcTo(X,Y+H,X,Y,R);x.arcTo(X,Y,X+W,Y,R);x.closePath();x.fill()};
+    x.fillStyle='#fff';rr(o-p,o-p,L+2*p,L+2*p,L*.28);x.fillStyle='#D62828';rr(o,o,L,L,L*.22);
+    x.fillStyle='#fff';x.textAlign='center';x.textBaseline='alphabetic';x.font='900 '+Math.round(L*.56)+'px Kanit,Prompt,Arial,sans-serif';x.fillText('K',size/2,o+L*.6);
+    x.fillStyle='#F77F00';x.fillRect(o+L*.3,o+L*.66,L*.4,Math.max(2,L*.045));
+    x.fillStyle='#fff';x.font='800 '+Math.round(L*.17)+'px Kanit,Prompt,Arial,sans-serif';x.fillText('POS',size/2,o+L*.88)}
+  return c.toDataURL()}catch(e){return ''}}
 A.qrTables=()=>{if(!srv())return toast('ต้องใส่ลิงก์ Web App ก่อน (ตั้งค่า › เชื่อมต่อ)');
   const list=[...S.tables.map(t=>({t,label:'โต๊ะ '+t.name})),{t:null,label:'สั่งกลับบ้าน'}];
-  const cards=list.map(x=>({label:x.label,img:qrDataUrl(orderUrl(x.t),360)}));
+  const cards=list.map(x=>({label:x.label,img:qrDataUrl(orderUrl(x.t),480,true)}));
   window._qrCards=cards;
   const test=orderUrl(list[0]&&list[0].t);
   modal(mh('QR สั่งอาหาร ('+cards.length+')')+`<div class="mb"><div class="note info" style="margin-bottom:12px">ลิงก์ใน QR: <b style="word-break:break-all">${esc(orderUrl(null).split('?')[0])}</b><br>ก่อนพิมพ์ให้กด <a href="${esc(test)}" target="_blank" rel="noopener">เปิดทดสอบ</a> ต้องเห็นหน้าเมนูร้าน ถ้าขึ้น 404 แปลว่ายังไม่ได้อัปโหลด order.html ขึ้น GitHub</div><div class="optgrid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr))">${cards.map(c=>`<div class="panel" style="text-align:center;padding:10px"><img src="${c.img}" alt="QR ${esc(c.label)}" style="width:100%;background:#fff;border-radius:8px"><b>${esc(c.label)}</b></div>`).join('')}</div></div>
