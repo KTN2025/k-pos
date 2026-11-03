@@ -429,7 +429,7 @@ function defaults(){
       requireShift:true, discountMgr:false, lockMin:0, defaultFloat:1000, paper:80, uiScale:1,
       theme:{preset:'leaf',brand:'#0F5A48',accent:'#E3A21A',mode:'auto'},
       kitchen:{on:true,print:true,kds:false,onPay:true,qrAuto:false}, qr:{on:false},
-      member:{on:true,earnPer:25,redeemPts:10,redeemBaht:10}, publicUrl:'', mainDevice:false, kfcSheetId:'', tgChat:''
+      member:{on:true,earnPer:25,redeemPts:10,redeemBaht:10}, publicUrl:'', mainDevice:false, kfcSheetId:'', tgChat:'', cover:'', logo:''
     },
     pay:[
       {id:'cash',name:'เงินสด',type:'cash',on:true},
@@ -678,7 +678,7 @@ function pickTable(forNew,moveFrom){
   const busyIds=new Set(Object.values(S.bills).filter(b=>b.tableId).map(b=>b.tableId));
   modal(mh(moveFrom?'ย้ายไปโต๊ะ':'เลือกโต๊ะ')+`<div class="mb">${zones.map(z=>{
     const ts=S.tables.filter(t=>t.zone===z.id);if(!ts.length)return '';
-    return `<div class="sect"><h3>${esc(z.name)}</h3></div><div class="optgrid">${ts.map(t=>{const busy=busyIds.has(t.id);return `<button class="opt ${busy?'on':''}" data-a="${moveFrom?'moveTo':'chooseTable'}" data-id="${t.id}" ${moveFrom&&busy?'disabled style="opacity:.4"':''}><b>${esc(t.name)}</b><small>${busy?'มีลูกค้า':t.seats+' ที่นั่ง'}</small></button>`}).join('')}</div>`}).join('')||'<p>ยังไม่มีโต๊ะ เพิ่มได้ที่ ตั้งค่า › ผังร้าน</p>'}</div>`);
+    return `<div class="sect"><h3>${esc(z.name)}</h3></div><div class="optgrid">${ts.map(t=>{const busy=busyIds.has(t.id);return `<button class="opt ${busy?'on':''}" data-a="${moveFrom?'moveTo':'chooseTable'}" data-id="${t.id}" ${moveFrom&&cur()&&cur().tableId===t.id?'disabled style="opacity:.4"':''}><b>${esc(t.name)}</b><small>${moveFrom&&cur()&&cur().tableId===t.id?'โต๊ะนี้':busy?(moveFrom?'มีลูกค้า · รวมบิล':'มีลูกค้า'):t.seats+' ที่นั่ง'}</small></button>`}).join('')}</div>`}).join('')||'<p>ยังไม่มีโต๊ะ เพิ่มได้ที่ ตั้งค่า › ผังร้าน</p>'}</div>`);
 }
 function openTable(tid){
   let b=Object.values(S.bills).find(x=>x.tableId===tid);
@@ -943,6 +943,13 @@ function setShop(){
     ${F('ที่อยู่','settings.address',st.address)}
     <div class="row2">${F('เบอร์โทร','settings.phone',st.phone)}${F('เลขประจำตัวผู้เสียภาษี (ถ้ามี)','settings.taxId',st.taxId)}</div>
     ${F('ข้อความท้ายใบเสร็จ','settings.receiptFooter',st.receiptFooter)}
+    <div class="sect"><h3>หน้าลูกค้าสั่งอาหาร (QR)</h3></div>
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:14px;align-items:start">
+      <div><div class="lbl" style="margin-bottom:6px">ภาพปกร้าน (แนวนอน)</div><div style="aspect-ratio:2/1;max-width:100%;border-radius:12px;background:var(--sunk) center/cover no-repeat;${st.cover?`background-image:url('${st.cover}')`:''};display:flex;align-items:center;justify-content:center;color:var(--muted)">${st.cover?'':'ยังไม่มีภาพปก'}</div>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><button class="btn sm" data-a="pickCover">เลือกภาพปก</button>${st.cover?'<button class="btn sm ghost" data-a="rmCover">ลบ</button>':''}</div></div>
+      <div><div class="lbl" style="margin-bottom:6px">โลโก้ร้าน</div><div style="width:110px;height:110px;border-radius:50%;background:var(--sunk) center/cover no-repeat;${st.logo?`background-image:url('${st.logo}')`:''};display:flex;align-items:center;justify-content:center;color:var(--muted);border:3px solid var(--card)">${st.logo?'':'โลโก้'}</div>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><button class="btn sm" data-a="pickLogo">เลือกโลโก้</button>${st.logo?'<button class="btn sm ghost" data-a="rmLogo">ลบ</button>':''}</div></div></div>
+    <p class="lbl" style="margin:0">รูปเมนูทุกเมนู ภาพปก และโลโก้ จะส่งขึ้นหน้าลูกค้าเมื่อกด 💾 บันทึกทั้งหมด ที่เครื่องหลัก · เมนูแนะนำ ⭐ และชื่อภาษาอังกฤษ/มลายู ตั้งได้ในหน้าแก้ไขเมนู</p>
     <div class="row2">${F('ชื่อเครื่องนี้','settings.device',st.device,{hint:'ใช้แยกบิลเวลามี iPad หลายเครื่อง เช่น iPad-1, iPad-2'})}${F('เงินทอนตั้งต้นเริ่มกะ (บาท)','settings.defaultFloat',st.defaultFloat,{type:'number'})}</div>
     <div class="sect"><h3>กะและสิทธิ์พนักงาน</h3></div>
     ${T('บังคับเปิดกะก่อนขาย','ขายไม่ได้จนกว่าจะเปิดกะและใส่เงินทอนตั้งต้น','settings.requireShift',st.requireShift)}
@@ -981,16 +988,19 @@ function menuForm(m){
     <div style="display:flex;gap:14px;align-items:center"><div class="mrow" style="width:auto;border:0;padding:0;grid-template-columns:96px"><span class="th" id="mimg" style="width:96px;height:96px;--hue:${catHue(d.cat)};${d.img?`background-image:url('${d.img}')`:''}">${d.img?'':'รูป'}</span></div>
       <div style="display:grid;gap:8px"><button class="btn sm" data-a="pickImg">เลือกรูปเมนู</button>${d.img?'<button class="btn sm ghost" data-a="rmImg">ลบรูป</button>':''}<span class="lbl">ระบบย่อรูปให้อัตโนมัติ เก็บไว้ในเครื่อง</span></div></div>
     <div class="field"><label for="m_name">ชื่อเมนู</label><input id="m_name" value="${esc(d.name)}" placeholder="เช่น ข้าวแกงเขียวหวานไก่"></div>
+    <div class="row2"><div class="field"><label for="m_en">ชื่อภาษาอังกฤษ (ไม่บังคับ)</label><input id="m_en" value="${esc(d.en||'')}" placeholder="Green curry chicken with rice"></div>
+      <div class="field"><label for="m_ms">ชื่อภาษามลายู (ไม่บังคับ)</label><input id="m_ms" value="${esc(d.ms||'')}" placeholder="Nasi kari hijau ayam"></div></div>
     <div class="row2"><div class="field"><label for="m_price">ราคาขาย (บาท)</label><input id="m_price" type="number" inputmode="decimal" value="${esc(d.price)}"></div>
       <div class="field"><label for="m_cat">หมวดหมู่</label><select id="m_cat">${S.cats.map(c=>`<option value="${c.id}" ${c.id===d.cat?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div></div>
     <div class="field"><label for="m_cost">ต้นทุนต่อจาน (บาท)</label><input id="m_cost" type="number" inputmode="decimal" value="${esc(d.cost)}">
       <span class="hint">${d.costSrc==='kfc'?(d.kfcId?'ผูกกับสูตร '+esc(d.kfcId)+' · ':'')+'ดึงมาจาก K-Food cost ล่าสุด · ถ้าแก้เองจะเปลี่ยนเป็นต้นทุนกรอกเอง':'กรอกเอง หรือกด “ดึงต้นทุนจาก K-Food cost” ในหน้าเมนู ระบบจะจับคู่ตามชื่อเมนู'}</span></div>
     <div class="field"><label for="m_opts">ตัวเลือกเพิ่ม (บรรทัดละ 1 รายการ: ชื่อ = ราคาเพิ่ม)</label><textarea id="m_opts" placeholder="ไข่ดาว = 10&#10;เผ็ดน้อย = 0">${esc(d.opts.map(o=>o.name+' = '+o.price).join('\n'))}</textarea></div>
+    ${T('⭐ เมนูแนะนำ','ขึ้นด้านบนสุดในหน้าลูกค้าสั่งผ่าน QR','_mrec',!!d.rec)}
     ${T('แสดงในหน้าขาย','','_mon',d.on)}
     ${T('ของหมด (กดขายไม่ได้ชั่วคราว)','','_mout',d.out)}
   </div></div>
   <div class="mf">${d._new?'':'<button class="btn danger" data-a="menuDel">ลบเมนู</button><span style="flex:1"></span>'}<button class="btn" data-a="close">ยกเลิก</button><button class="btn primary" data-a="menuSave">บันทึก</button></div>`,'wide');
-  $('#t__mon').removeAttribute('data-bind');$('#t__mout').removeAttribute('data-bind');
+  $('#t__mon').removeAttribute('data-bind');$('#t__mout').removeAttribute('data-bind');$('#t__mrec').removeAttribute('data-bind');
 }
 function setPlan(){
   if(!editZone||!S.zones.find(z=>z.id===editZone)) editZone=(S.zones[0]||{}).id;
@@ -1108,7 +1118,7 @@ function syncSoon(){clearTimeout(syncT);syncT=setTimeout(()=>sync(false),800)}
 async function sync(manual){
   if(syncing) return; if(!srv()){if(manual)toast('ใส่ลิงก์ Web App ที่ ตั้งค่า › เชื่อมต่อ ก่อน');return}
   if(!manual&&!S.settings.autoSync) return;
-  await syncShifts();await flushKitchen();await syncMembers();await autoPushCfg();await autoPullCfg();
+  await syncShifts();await flushKitchen();await syncMembers();await autoPushCfg();await autoPullCfg();if(shopCode())pushImgs(false);
   const pend=S.orders.filter(o=>!o.synced&&!o.demo).slice(0,40); if(!pend.length){if(manual)toast('ซิงก์ครบแล้ว');syncing=false;updateSync();return}
   syncing=true;
   try{const j=await api('POST',null,{action:'orders',device:S.settings.device,orders:pend});
@@ -1195,7 +1205,12 @@ const A={
     if(pickTableForCurrent){pickTableForCurrent=false;const b=cur();const ex=Object.values(S.bills).find(x=>x.tableId===tid);
       if(ex&&b&&ex.id!==b.id){ex.items.push(...b.items);delete S.bills[b.id];S.cur=ex.id}else if(b){b.type='dine';b.tableId=tid}save();closeModal();view='sell';render();return}
     openTable(tid);closeModal();view='sell';render()},
-  moveTo(el){const b=cur();b.tableId=el.dataset.id;save();closeModal();render();toast('ย้ายโต๊ะแล้ว')},
+  moveTo(el){const b=cur();if(!b)return;const to=el.dataset.id,from=b.tableId,ex=Object.values(S.bills).find(x=>x.tableId===to&&x.id!==b.id);
+    const tn=id=>(S.tables.find(t=>t.id===id)||{}).name||'';
+    if(ex&&!el.dataset.ok){modal(mh('รวมบิล?')+`<div class="mb"><p>โต๊ะ <b>${esc(tn(to))}</b> มีบิลอยู่แล้ว (${ex.items.reduce((a,l)=>a+l.qty,0)} รายการ)</p><p>รวมรายการของโต๊ะ <b>${esc(tn(from))}</b> เข้าไปเป็นบิลเดียวกันที่โต๊ะ ${esc(tn(to))} ใช่ไหม</p><p class="lbl">ส่วนลดและสมาชิกของบิลโต๊ะ ${esc(tn(from))} จะใช้ของโต๊ะ ${esc(tn(to))} แทน</p></div><div class="mf"><button class="btn" data-a="close">ยกเลิก</button><button class="btn primary" data-a="moveTo" data-id="${to}" data-ok="1">รวมบิล</button></div>`);return}
+    if(ex){ex.items.push(...b.items);if(b.note)ex.note=[ex.note,b.note].filter(Boolean).join(' · ');if(!ex.member&&b.member)ex.member=b.member;delete S.bills[b.id];S.cur=ex.id}else b.tableId=to;
+    saveNow();closeModal();render();toast(ex?'รวมบิลเข้าโต๊ะ '+tn(to)+' แล้ว':'ย้ายไปโต๊ะ '+tn(to)+' แล้ว');
+    if(qrOn()&&from){api('POST',null,{action:'tableMove',from,to,fromName:tn(from),toName:tn(to)}).catch(()=>{}).then(()=>pushTableBills(true))}},
   tapTable(el){if(shiftGate()){A.shiftOpen();return}openTable(el.dataset.id);view='sell';render()},
   resume(el){S.cur=el.dataset.id;sellType=S.bills[S.cur].type;save();view='sell';render()},
   zone(el){planZone=el.dataset.id;renderTables()},
@@ -1273,10 +1288,10 @@ const A={
   menuSave(){const d=menuDraft;d.name=$('#m_name').value.trim();if(!d.name)return toast('ใส่ชื่อเมนูก่อน');
     d.price=+$('#m_price').value||0;d.cat=$('#m_cat').value;const nc=+$('#m_cost').value||0;if(nc!==(+d.cost||0))d.costSrc='manual';d.cost=nc;
     d.opts=$('#m_opts').value.split('\n').map(s=>s.trim()).filter(Boolean).map(s=>{const p=s.split(/=|:/);return {name:p[0].trim(),price:+(p[1]||0)||0}});
-    d.on=$('#t__mon').checked;d.out=$('#t__mout').checked;const isNew=d._new;delete d._new;
+    d.on=$('#t__mon').checked;d.out=$('#t__mout').checked;d.rec=$('#t__mrec').checked;d.en=$('#m_en').value.trim();d.ms=$('#m_ms').value.trim();const isNew=d._new;delete d._new;
     if(isNew)S.menu.push(d);else S.menu[S.menu.findIndex(m=>m.id===d.id)]=d;S.demo=S.demo&&true;save();closeModal();setMenu();toast('บันทึกเมนูแล้ว')},
   menuDel(){S.menu=S.menu.filter(m=>m.id!==menuDraft.id);save();closeModal();setMenu()},
-  catManage(){modal(mh('หมวดหมู่เมนู')+`<div class="mb"><div class="mlist" id="catList">${S.cats.map((c,i)=>`<div class="toggle"><input class="catn" data-i="${i}" value="${esc(c.name)}" style="border:0;background:transparent;flex:1;height:36px" aria-label="ชื่อหมวด"><span style="display:flex;gap:6px"><button class="btn sm ghost" data-a="catUp" data-i="${i}" aria-label="เลื่อนขึ้น">↑</button><button class="btn sm ghost" data-a="catDel" data-i="${i}">ลบ</button></span></div>`).join('')}</div>
+  catManage(){modal(mh('หมวดหมู่เมนู')+`<div class="mb"><div class="mlist" id="catList">${S.cats.map((c,i)=>`<div class="toggle"><input class="catn" data-i="${i}" value="${esc(c.name)}" style="border:0;background:transparent;flex:1;min-width:0;height:36px" aria-label="ชื่อหมวด"><input class="catx" data-i="${i}" data-l="en" value="${esc(c.en||'')}" placeholder="EN" style="width:84px;height:32px;border:1px solid var(--line);border-radius:8px;padding:0 6px;background:transparent" aria-label="ชื่อหมวดภาษาอังกฤษ"><input class="catx" data-i="${i}" data-l="ms" value="${esc(c.ms||'')}" placeholder="MS" style="width:84px;height:32px;border:1px solid var(--line);border-radius:8px;padding:0 6px;background:transparent" aria-label="ชื่อหมวดภาษามลายู"><span style="display:flex;gap:6px"><button class="btn sm ghost" data-a="catUp" data-i="${i}" aria-label="เลื่อนขึ้น">↑</button><button class="btn sm ghost" data-a="catDel" data-i="${i}">ลบ</button></span></div>`).join('')}</div>
     <div style="display:flex;gap:8px;margin-top:12px"><input id="newCat" class="btn" style="flex:1;font-weight:400" placeholder="ชื่อหมวดใหม่"><button class="btn primary" data-a="catAdd">เพิ่ม</button></div></div><div class="mf"><button class="btn primary" data-a="catDone">เสร็จ</button></div>`)},
   catAdd(){const n=$('#newCat').value.trim();if(!n)return;saveCatNames();S.cats.push({id:uid(),name:n});save();A.catManage()},
   catDel(el){const i=+el.dataset.i;const c=S.cats[i];if(S.menu.some(m=>m.cat===c.id))return toast('ย้ายหรือลบเมนูในหมวด “'+c.name+'” ก่อน');saveCatNames();S.cats.splice(i,1);save();A.catManage()},
@@ -1307,6 +1322,8 @@ const A={
   payAddOk(){const n=$('#pn').value.trim();if(!n)return;S.pay.push({id:uid(),name:n,type:'other',on:true});save();closeModal();setPay()},
   payDel(el){S.pay.splice(+el.dataset.i,1);save();setPay()},
   pickQr(){imgTarget='qr';$('#fileImg').click()},
+  pickCover(){imgTarget='cover';$('#fileImg').click()},pickLogo(){imgTarget='logo';$('#fileImg').click()},
+  rmCover(){S.settings.cover='';save();setShop()},rmLogo(){S.settings.logo='';save();setShop()},
   rmQr(){S.settings.qrImage='';save();setPay()},
   async testConn(){try{const j=await api('GET',{action:'ping'});toast('เชื่อมต่อสำเร็จ: '+(j.sheet||'Google Sheet')+(j.foodcost?' · K-Food cost: '+j.foodcost:''))}catch(e){toast('เชื่อมต่อไม่สำเร็จ: '+e.message)}},
   syncNow(){sync(true)},
@@ -1324,7 +1341,7 @@ const A={
   bgClose(el,e){if(e.target===el&&!payState)closeModal()}
 };
 let discT='pct',imgTarget='menu',pickTableForCurrent=false,longPressed=null;
-function saveCatNames(){document.querySelectorAll('.catn').forEach(i=>{const c=S.cats[+i.dataset.i];if(c&&i.value.trim())c.name=i.value.trim()})}
+function saveCatNames(){document.querySelectorAll('.catn').forEach(i=>{const c=S.cats[+i.dataset.i];if(c&&i.value.trim())c.name=i.value.trim()});document.querySelectorAll('.catx').forEach(i=>{const c=S.cats[+i.dataset.i];if(c)c[i.dataset.l]=i.value.trim()})}
 function download(name,data,type){try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}catch(e){toast('ดาวน์โหลดไม่ได้ในหน้านี้')}}
 
 /* ================= users / PIN / roles ================= */
@@ -1728,11 +1745,11 @@ A.qrTables=()=>{if(!srv())return toast('ต้องใส่ลิงก์ Web
 A.qrPrint=()=>printHTML((window._qrCards||[]).map(c=>`<div class="receipt" style="page-break-after:always;text-align:center"><div class="big">${esc(S.settings.shopName)}</div><div style="font-size:22px;font-weight:700;margin:6px 0">${esc(c.label)}</div><img src="${c.img}" style="width:62mm;height:62mm" alt=""><div>สแกนเพื่อดูเมนูและสั่งอาหาร</div><div style="margin-top:8px;border-top:1px dashed #000;padding-top:6px;font-size:11px;line-height:1.5">สั่งอาหารผ่านระบบ <b style="font-size:14px">K-POS</b><br>ระบบโดย KTN BUSINESS SOLUTION CO.,LTD<br>สนใจใช้ระบบนี้ที่ร้านคุณ LINE: lin.ee/RmteuQA</div></div>`).join(''));
 
 /* auto-push menu/tables for QR page & other devices */
-function cfgPayload(){const c=JSON.parse(JSON.stringify({users:S.users.filter(u=>u.id!=='__ktn'),settings:S.settings,pay:S.pay,cats:S.cats,menu:S.menu,zones:S.zones,tables:S.tables,decos:S.decos}));c.menu.forEach(m=>{m.img='';delete m.imgSrc});c.settings.qrImage='';delete c.settings.device;return c}
+function cfgPayload(){const c=JSON.parse(JSON.stringify({users:S.users.filter(u=>u.id!=='__ktn'),settings:S.settings,pay:S.pay,cats:S.cats,menu:S.menu,zones:S.zones,tables:S.tables,decos:S.decos}));c.menu.forEach(m=>{m.img='';delete m.imgSrc});c.settings.qrImage='';delete c.settings.cover;delete c.settings.logo;delete c.settings.device;return c}
 function strHash(s){let h=5381;for(let i=0;i<s.length;i++)h=(h*33+s.charCodeAt(i))|0;return String(h)}
 let cfgVer='',cfgWarned=false;
 function applyCfg(c,ver){const imgs={},src={};S.menu.forEach(m=>{imgs[m.id]=m.img;src[m.id]=m.imgSrc});
-  const st=S.settings;const keep={device:st.device,qrImage:st.qrImage,gasUrl:st.gasUrl,mainDevice:st.mainDevice,uiScale:st.uiScale,paper:st.paper,kitchen:st.kitchen,lockMin:st.lockMin,publicUrl:st.publicUrl,kfcImg:st.kfcImg};
+  const st=S.settings;const keep={device:st.device,qrImage:st.qrImage,cover:st.cover||'',logo:st.logo||'',gasUrl:st.gasUrl,mainDevice:st.mainDevice,uiScale:st.uiScale,paper:st.paper,kitchen:st.kitchen,lockMin:st.lockMin,publicUrl:st.publicUrl,kfcImg:st.kfcImg};
   Object.assign(S,{pay:c.pay,cats:c.cats,menu:c.menu.map(m=>({...m,img:imgs[m.id]||'',imgSrc:src[m.id]})),zones:c.zones,tables:c.tables,decos:c.decos||[]});
   if(c.users&&c.users.length&&c.users.some(u=>u.role==='owner'))S.users=SUP?[supUser(),...c.users]:c.users;
   S.settings={...S.settings,...c.settings,...keep};S.demo=false;S.cfgVer=ver||S.cfgVer;S.cfgHash=strHash(JSON.stringify(cfgPayload()));saveNow();applyTheme();
@@ -1862,9 +1879,10 @@ document.addEventListener('pointerup',()=>{clearTimeout(lpT);setTimeout(()=>long
 document.addEventListener('click',e=>{if(longPressed&&e.target.closest('.item')){e.stopImmediatePropagation()}},true);
 
 $('#fileImg').addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
-  const rd=new FileReader();rd.onload=()=>{const img=new Image();img.onload=()=>{const max=imgTarget==='qr'?600:320;const sc=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*sc);c.height=Math.round(img.height*sc);const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0,c.width,c.height);
-    const url=c.toDataURL('image/jpeg',imgTarget==='qr'?.9:.72);
-    if(imgTarget==='qr'){S.settings.qrImage=url;save();setPay()}else{menuDraft.img=url;menuDraft.imgSrc='own';const el=$('#mimg');el.style.backgroundImage=`url('${url}')`;el.textContent=''}};img.src=rd.result};rd.readAsDataURL(f)});
+  const rd=new FileReader();rd.onload=()=>{const img=new Image();img.onload=()=>{const max=imgTarget==='qr'?600:imgTarget==='cover'?1100:imgTarget==='logo'?320:320;const sc=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*sc);c.height=Math.round(img.height*sc);const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0,c.width,c.height);
+    const url=c.toDataURL('image/jpeg',imgTarget==='qr'?.9:imgTarget==='cover'?.68:.8);
+    if(imgTarget==='cover'||imgTarget==='logo'){S.settings[imgTarget]=url;save();setShop();toast('ตั้งรูปแล้ว · กด 💾 บันทึกทั้งหมด เพื่อส่งขึ้นหน้าลูกค้า')}
+    else if(imgTarget==='qr'){S.settings.qrImage=url;save();setPay()}else{menuDraft.img=url;menuDraft.imgSrc='own';const el=$('#mimg');el.style.backgroundImage=`url('${url}')`;el.textContent=''}};img.src=rd.result};rd.readAsDataURL(f)});
 $('#fileJson').addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const d=JSON.parse(rd.result);if(!d.settings||!d.menu)throw 0;S=d;saveNow();render();toast('กู้คืนข้อมูลแล้ว')}catch(err){toast('ไฟล์ไม่ถูกต้อง เลือกไฟล์ .json ที่ได้จากปุ่มสำรองข้อมูล')}};rd.readAsText(f)});
 window.addEventListener('online',()=>{updateSync();sync(false)});
 window.addEventListener('offline',updateSync);
@@ -1957,10 +1975,19 @@ A.saveAll=async()=>{const ae=document.activeElement;if(ae&&ae.blur)ae.blur();
   if(!srv()||!navigator.onLine){toast(srv()?'บันทึกในเครื่องแล้ว · ออฟไลน์อยู่ จะส่งขึ้นเซิร์ฟเวอร์เมื่อต่อเน็ต':'บันทึกในเครื่องแล้ว');return}
   toast('กำลังบันทึกและส่งขึ้นเซิร์ฟเวอร์…');
   let pushed=false;
-  if(S.settings.mainDevice||SUP){S.cfgHash='';await autoPushCfg();pushed=!!S.cfgHash}
+  if(S.settings.mainDevice||SUP){S.cfgHash='';await autoPushCfg();pushed=!!S.cfgHash&&(shopCode()?await pushImgs(false):true)}
   try{await sync(false)}catch(e){}
   if(S.settings.mainDevice||SUP)toast(pushed?'✅ บันทึกแล้ว · เครื่องอื่นในร้านจะได้รับภายใน 1 นาที':'บันทึกในเครื่องแล้ว แต่ส่งขึ้นเซิร์ฟเวอร์ไม่สำเร็จ ลองกดอีกครั้ง');
   else toast('✅ บันทึกในเครื่องนี้แล้ว · เครื่องนี้ไม่ใช่เครื่องหลัก เมนู/ราคาให้แก้ที่เครื่องหลัก')};
+/* ===== รูปเมนู/ภาพปก/โลโก้ → หน้าลูกค้า QR ===== */
+let imgPushing=false;
+async function pushImgs(force){if(imgPushing||!(S.settings.mainDevice||SUP)||!srv()||!navigator.onLine)return true;imgPushing=true;
+  try{const want={};S.menu.forEach(m=>{if(m.img&&/^data:image/.test(m.img))want[m.id]=m.img});if(S.settings.cover)want.__cover=S.settings.cover;if(S.settings.logo)want.__logo=S.settings.logo;
+    const k=v=>v.length+':'+v.slice(-24),sent=S.imgSent||{},send={};
+    Object.keys(want).forEach(id=>{if(force||sent[id]!==k(want[id]))send[id]=want[id]});Object.keys(sent).forEach(id=>{if(!want[id])send[id]=''});
+    let batch={},size=0;const flush=async()=>{if(!Object.keys(batch).length)return;await api('POST',null,{action:'menuImgs',imgs:batch});Object.keys(batch).forEach(id=>{if(batch[id])sent[id]=k(batch[id]);else delete sent[id]});S.imgSent=sent;saveNow();batch={};size=0};
+    for(const id of Object.keys(send)){batch[id]=send[id];size+=send[id].length;if(size>350000)await flush()}
+    await flush();return true}catch(e){return false}finally{imgPushing=false}}
 /* ===== K-Food cost ในแอป (เมนู ต้นทุน) ===== */
 A.kfcOpen=()=>{if(!shopCode())return toast('ต้องใช้รหัสร้าน K-POS ก่อน');if(!navigator.onLine)return toast('หน้าต้นทุนต้องต่ออินเทอร์เน็ต');
   const go=async u=>{toast('กำลังเปิดหน้าต้นทุน…');

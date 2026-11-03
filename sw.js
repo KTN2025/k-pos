@@ -1,5 +1,5 @@
 /* K-POS – service worker: ทำให้เปิดแอปได้แม้ไม่มีอินเทอร์เน็ต */
-const CACHE='kpos-v13';
+const CACHE='kpos-v15';
 const SHELL=['./','./index.html','./manifest.json','./icon-180.png','./icon-192.png','./icon-512.png','./order.html','./config.js','./start.html','./kfc.html',
   'https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js'];
 self.addEventListener('install',e=>{
