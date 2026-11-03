@@ -917,7 +917,7 @@ function renderReports(){
 /* ================= SETTINGS ================= */
 const TABS=[['shop','ร้านค้า'],['menu','เมนู'],['plan','ผังร้าน/โต๊ะ'],['pay','การชำระเงิน'],['features','ครัว & QR สั่งอาหาร','manager'],['members','สมาชิก','manager'],['look','สี & ธีม'],['users','ผู้ใช้ & PIN','owner'],['device','เครื่อง & การพิมพ์'],['link','เชื่อมต่อ & K-Food cost','owner'],['data','ข้อมูล','owner']];
 function renderSettings(){
-  $('#view').innerHTML=`<div class="pagehead"><h1>ตั้งค่า</h1>${S.demo?'<span class="demo-flag">กำลังใช้ข้อมูลตัวอย่าง</span>':''}</div>
+  $('#view').innerHTML=`<div class="pagehead"><h1>ตั้งค่า</h1>${S.demo?'<span class="demo-flag">กำลังใช้ข้อมูลตัวอย่าง</span>':''}<button class="btn primary" data-a="saveAll" style="min-width:150px">💾 บันทึกทั้งหมด</button></div>
     <div class="tabs">${TABS.filter(t=>!t[2]||can(t[2])).map(([k,v])=>`<button class="chip ${settingsTab===k?'on':''}" data-a="stab" data-t="${k}">${v}</button>`).join('')}</div>
     <div class="scroll" id="sbody"></div>`;
   const tab=TABS.find(t=>t[0]===settingsTab);if(!tab||(tab[2]&&!can(tab[2]))){settingsTab='shop';return renderSettings()}
@@ -1945,6 +1945,15 @@ function setupGuide(){const l=S.lic||{};
   <p><b>เริ่มต้น 5 ขั้น</b></p><ol style="padding-left:20px;line-height:1.9;margin:0">
   <li>ตั้งค่า › ร้าน — ที่อยู่ เบอร์ พร้อมเพย์</li><li>ตั้งค่า › เมนู — เพิ่มหมวดและเมนู</li><li>ตั้งค่า › ผังโต๊ะ — ถ้ามีหน้าร้าน</li><li>ตั้งค่า › ผู้ใช้ & PIN — เพิ่มพนักงาน</li><li>เปิดกะ แล้วเริ่มขายได้เลย</li></ol>
   <p class="lbl">ทดลองใช้ฟรีถึง ${l.expiry?dstr(l.expiry):'-'} · ต่ออายุได้ที่ ตั้งค่า › เชื่อมต่อ</p></div><div class="mf"><button class="btn primary" data-a="close">เริ่มเลย</button></div>`)}
+A.saveAll=async()=>{const ae=document.activeElement;if(ae&&ae.blur)ae.blur();
+  await new Promise(r=>setTimeout(r,60));saveNow();applyTheme();
+  if(!srv()||!navigator.onLine){toast(srv()?'บันทึกในเครื่องแล้ว · ออฟไลน์อยู่ จะส่งขึ้นเซิร์ฟเวอร์เมื่อต่อเน็ต':'บันทึกในเครื่องแล้ว');return}
+  toast('กำลังบันทึกและส่งขึ้นเซิร์ฟเวอร์…');
+  let pushed=false;
+  if(S.settings.mainDevice||SUP){S.cfgHash='';await autoPushCfg();pushed=!!S.cfgHash}
+  try{await sync(false)}catch(e){}
+  if(S.settings.mainDevice||SUP)toast(pushed?'✅ บันทึกแล้ว · เครื่องอื่นในร้านจะได้รับภายใน 1 นาที':'บันทึกในเครื่องแล้ว แต่ส่งขึ้นเซิร์ฟเวอร์ไม่สำเร็จ ลองกดอีกครั้ง');
+  else toast('✅ บันทึกในเครื่องนี้แล้ว · เครื่องนี้ไม่ใช่เครื่องหลัก เมนู/ราคาให้แก้ที่เครื่องหลัก')};
 /* ===== โหมดช่วยเหลือร้าน (เปิดจากหน้าแอดมิน K-Central) ===== */
 let supOk=false,supMsg='';
 function supUser(){return {id:'__ktn',name:'KTN ช่วยเหลือ',role:'owner',pin:''}}
